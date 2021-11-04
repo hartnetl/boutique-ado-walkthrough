@@ -5,6 +5,7 @@
 - [Workspace setup](#set-up-your-workspace)  
 - [Authentication](#allauth-authentication)
 - [Base template setup](#setup-base-template)
+- [Home page template setup](#home-setup)
 
 ##
 
@@ -243,12 +244,59 @@ After that add in the template directories
             os.path.join(BASE_DIR, 'templates', 'allauth'),
         ],
 
+Test it worked 
 
-
-
-
+    python3 manage.py runserver
+    You should have a page saying "It works" as per your index.html code
 
 
 [Back to top](#walkthrough-steps)
 
+</details>
+
+
+## Home setup
+
+<details>
+<summary>click me here</summary>
+
+[ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/196e74d3dd5849cd801d319d7095c3eb/?child=first)
+
+Structure the homepage template
+
+        {% extends "base.html" %}
+        {% load static %}
+
+        {% block page_header %}
+            <div class="container headeer-container">
+                <div class="row">
+                    <div class="col">
+                        
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
+
+        {% block content %}
+
+        <h1 class="display-4 text-success">It works!</h1>
+        <!-- h-100 gives 100% height (container and row) and my-auto (column) for vertical centering -->
+            <div class="container h-100">
+                <div class="row h-100">
+                    <!-- make the column sit to the left -->
+                    <div class="col-7 col-md-6 my-auto">
+                        <!-- display-4 is a bootstrap heading class; logo-font and text-black will be manual css -->
+                        <h1 class="display-4 logo-font text-black">The new collections are here!</h1>
+                        <div class="my-5">
+                            <h4>
+                                <a href="" class="shop-now-button btn btn-lg rounded-0 text-uppercase py-3">Shop Now</a>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
+[Back to top](#walkthrough-steps)
 </details>
