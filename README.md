@@ -4,12 +4,14 @@
 
 - [Workspace setup](#set-up-your-workspace)  
 - [Authentication](#allauth-authentication)
+- [Base template setup](#setup-base-template)
 
 ##
 
 <details>
 <summary></summary>
 
+[Back to top](#walkthrough-steps)
 </details>
 
 
@@ -38,6 +40,8 @@
     Create a superuser
 
         python3 manage.py createsuperuser
+
+[Back to top](#walkthrough-steps)
 
 </details>
 
@@ -142,13 +146,28 @@ Set up your templates directory
     mkdir templates
     mkdir templates/allauth
 
+[Back to top](#walkthrough-steps)
+
+</details>
+
+## Setup base template
+<details>
+<summary>Click me</summary>
+
+[ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/fd5e6b796c0045358567707d02060317/?child=first)  
+[bootstrap starter code (v4.4)](https://getbootstrap.com/docs/4.4/getting-started/introduction/#starter-template)
+
+**Note** For this project use the **minified** version of jQuery
+
+Copy the allauth template files into your newly made directory
+
+    cp -r ../.pip-modules/lib/python3.8/site-packages/allauth/templates/* ./templates/allauth
+
+Delete the openid and test folders - they will then revert to default allauth versions  
+Create base.html file in templates  
+Copy bootstrap starter template (linked above)
 
 
-
-
-
-
-
-
+[Back to top](#walkthrough-steps)
 
 </details>
