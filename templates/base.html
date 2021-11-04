@@ -14,17 +14,27 @@
   {% block extra_meta %}
   {% endblock %}
 
-  <!-- Bootstrap css -->
   {% block corecss %}
+  <!-- Bootstrap css -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <!-- google font  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+    rel="stylesheet">
+  <!-- custom css  -->
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
   {% endblock %}
 
   {% block extra_css %}
   {% endblock %}
 
-  <!-- Bootstrap scripts -->
   {% block corejs %}
+  <!-- fontawesome kit  -->
+  <script src="https://kit.fontawesome.com/a7bc66b529.js" crossorigin="anonymous"></script>
+  <!-- Bootstrap scripts -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
     integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
   </script>
@@ -46,7 +56,7 @@
 <body>
 
   <header class="container-fluid fixed-top">
-    <div class="row">
+    <div id="topnav" class="row bg-white pt-lg-2 d-none d-lg-flex">
       <!-- A single row with 3 columns which stack vertically on everything except large and up screens 
         The columns are centered with extra padding for smaller screens -->
 
@@ -117,9 +127,9 @@
                 <div><i class="fas fa-shopping-bag fa-lg"></i></div>
                 <p class="my-0">
                   {% if grand_total %}
-                    ${{ grand_total|floatformat:2 }}
+                  ${{ grand_total|floatformat:2 }}
                   {% else %}
-                    $0.00
+                  $0.00
                   {% endif %}
                 </p>
               </div>

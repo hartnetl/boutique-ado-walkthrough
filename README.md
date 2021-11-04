@@ -351,10 +351,94 @@ Add structure to the base.html header
 
 <details>
 <summary>Video 2</summary>
+
+Add to account and shopping bag links in base.html
+
+         <!-- account and shopping bag links  -->
+        <div class="col-12 col-lg-4 my-auto py-1 py-lg-0">
+            <!-- these ul classes align list horizontally with no bullets  -->
+            <ul class="list-inline list-unstyled text-center tetx-lg-right my-0">
+
+            <!-- dropdown menu  -->
+            <li class="list-inline-item dropdown">
+                <!-- This is the parent menu containing a dropdown menu with user icon  -->
+                <a class="text-black nav-link" href="#" id="user-options" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                <div class="text-center">
+                    <div><i class="fas fa-user fa-lg"></i></div>
+                    <p class="my-0">My Account</p>
+                </div>
+                </a>
+
+                <!-- This is what gets displayed in the dropdown menu  -->
+                <div class="dropdown-menu border-0" aria-labelledby="user-options">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.is_superuser %}
+                        <a href="" class="dropdown-item">Product Management</a>
+                    {% endif %}
+                        <a href="" class="dropdown-item">My Profile</a>
+                        <!-- These account urls come from allauth  -->
+                        <a href="{% url 'account_logout' %}" class="dropdown-item">Logout</a>
+                {% else %}
+                    <a href="{% url 'account_signup' %}" class="dropdown-item">Register</a>
+                    <a href="{% url 'account_login' %}" class="dropdown-item">Login</a>
+                {% endif %}
+                </div>
+            </li>
+
+            <!-- Shopping bag link  -->
+            <li class="list-inline-item">
+                <a class="{% if grand_total %}text-info font-weight-bold{% else %}text-black{% endif %} nav-link" href="">
+                <div class="text-center">
+                    <div><i class="fas fa-shopping-bag fa-lg"></i></div>
+                    <p class="my-0">
+                    {% if grand_total %}
+                        ${{ grand_total|floatformat:2 }}
+                    {% else %}
+                        $0.00
+                    {% endif %}
+                    </p>
+                </div>
+                </a>
+            </li>
+            </ul>
+        </div>
+        </div>
+
+Start the css
+
 </details>
 
 <details>
 <summary>Video 3</summary>
+
+Get lato fonts from google and load them into core css  
+Link custom css "base.css" to corecss  
+Go to fontawesome - account - kits - copy your link  
+    Paste that into your corejs  
+
+In settings.py under static_url at the bottom, tell django where the static files are located
+
+    STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+
+Under that tell it where the uploaded media files will go
+
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+Go to project urls.py and add hte media url from settings
+
+    from django.contrib import admin
+    from django.urls import path, include
+    from django.conf import settings
+    from django.conf.urls.static import static
+
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('accounts/', include('allauth.urls')),
+        path('', include('home.urls')),
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 </details>
 
 <details>
