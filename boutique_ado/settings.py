@@ -85,6 +85,21 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
+# allauth is going to send confirmation emails when an account is created, so 
+# we're going to temporarily log them to the console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# allauth settings
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+ACCOUNT_USERNAME_MIN_LENGTH = 4
+# where to go to login
+LOGIN_URL = '/accounts/login/'
+# where to go after you've logged in
+LOGIN_REDIRECT_URL = '/'
+
 WSGI_APPLICATION = 'boutique_ado.wsgi.application'
 
 

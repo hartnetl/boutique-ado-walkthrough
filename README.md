@@ -64,7 +64,7 @@ Note: This walkthrough doesn't use socials sign in; learn how to do this
 
 Add allauth URL to urls.py
 
-        path('accounts', include('allauth.urls')),
+        path('accounts/', include('allauth.urls')),
 
     Import include from django.urls
 
@@ -90,6 +90,57 @@ Go to admin panel (/admin) and sign in with your superuser details
 When trying to send actual emails from Gitpod, an error stating Issue binding port will be displayed which causes sending of the email to fail. Logging issues to the terminal while developing on Gitpod, as done in this video, serves to test Authentication and Authorisation functionality until project deployment.
 
 Once deployed to Heroku, the sending of actual emails will become a possibility, so please wait until then before attempting it.
+
+
+Set up allauth settings - settings.py
+
+    allauth is going to send confirmation emails when an account is created, so we're going to temporarily log them to the console
+    
+        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    allauth settings
+
+        ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+        ACCOUNT_EMAIL_REQUIRED = True
+        ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+        ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+        ACCOUNT_USERNAME_MIN_LENGTH = 4
+
+    where to go to login
+    
+        LOGIN_URL = '/accounts/login/'
+    
+    where to go after you've logged in
+    
+        LOGIN_REDIRECT_URL = '/success'
+
+
+Test it worked
+
+    python3 manage.py runserver
+
+    yoururl /accounts/login
+
+    sign in 
+    you'll get redirected to confirm-email
+
+    go to admin panel
+    email-address model
+    add an email address to your account and set as primary and verified
+
+    logout
+    login through accounts/login
+    You'll get a 404 page error because it redirects to /success like we told it to in settings.py 
+    Now go to that redirect and change it from /success to just /
+
+Save your requirements
+
+    pip3 freeze > requirements.txt
+
+Set up your templates directory
+
+    mkdir templates
+    mkdir templates/allauth
 
 
 
