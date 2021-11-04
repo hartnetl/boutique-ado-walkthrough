@@ -262,6 +262,9 @@ Test it worked
 
 [ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/196e74d3dd5849cd801d319d7095c3eb/?child=first)
 
+<details>
+<summary>Video 1</summary>
+
 Structure the homepage template
 
         {% extends "base.html" %}
@@ -297,6 +300,66 @@ Structure the homepage template
                 </div>
             </div>
         {% endblock %}
+
+Add structure to the base.html header
+
+        <header class="container-fluid fixed-top">
+        <div class="row">
+        <!-- A single row with 3 columns which stack vertically on everything except large and up screens 
+            The columns are centered with extra padding for smaller screens -->
+
+        <!-- logo  -->
+        <!-- The logo should be centred, but left aligned on large and up screens  -->
+        <div class="col-12 col-lg-4 my-auto py-1 py-lg-0 text-center text-lg-left">
+            <a href="{% url 'home' %}" class="nav-link main-logo-link">
+            <h2 class="logo-font text-black my-0"><strong>Boutique </strong>Ado</h2>
+            </a>
+        </div>
+
+        <!-- Search bar  -->
+        <div class="col-12 col-lg-4 my-auto py-1 py-lg-0">
+            <form method="GET" action="">
+            <div class="input-group w-100">
+                <!-- This input is a type bar; q is for query -->
+                <input class="form-control border border-black rounded-0" type="text" name="q"
+                placeholder="Search our site">
+                <!-- This input-group-append is a bootstrap class to attach button to text input -->
+                <div class="input-group-append">
+                <!-- button for submitting  -->
+                <button class="form-control btn btn-black border border-black rounded-0" type="submit">
+                    <span class="icon">
+                    <i class="fas fa-search"></i>
+                    </span>
+                </button>
+                </div>
+            </div>
+            </form>
+        </div>
+
+        <!-- account and shopping bag links  -->
+        <div class="col-12 col-lg-4 my-auto py-1 py-lg-0">
+            <!-- these ul classes align list horizontally with no bullets  -->
+            <ul class="list-inline list-unstyled text-center tetx-lg-right my-0">
+            <li class="list-inline-item dropdown"></li>
+            <li class="list-inline-item"></li>
+            </ul>
+        </div>
+        </div>
+    </header>
+
+</details>
+
+<details>
+<summary>Video 2</summary>
+</details>
+
+<details>
+<summary>Video 3</summary>
+</details>
+
+<details>
+<summary>Video 4 - navigation</summary>
+</details>
 
 [Back to top](#walkthrough-steps)
 </details>
