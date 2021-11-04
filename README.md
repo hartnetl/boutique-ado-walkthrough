@@ -181,7 +181,72 @@ Add basic template to the body
     <div class="message-container"></div>
     {% endif %}
     
+    {% block page_header %}
+    {% endblock %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% block postloadjs %}
+    {% endblock %}
+
     </body>
+
+
+Create home app
+
+    python3 manage.py startapp home
+
+Create templates folder in the home app 
+
+    mkdir -p home/templates/home
+
+Create index.html file in the home template folder and fill with test code
+
+    {% extends "base.html" %}
+    {% load static %}
+
+    {% block content %}
+
+    <h1 class="display-4 text-success">It works!</h1>
+    {% endblock %}
+
+Create view to render the code (home/views.py)
+
+    def index(request):
+    """ A view to return the index page """
+    
+    return render(request, 'home/index.html')
+
+Create urls.py file inside home folder
+
+    from django.contrib import admin
+    from django.urls import path, include
+    from . import views
+
+    urlpatterns = [
+    path('', views.index, name='home'),
+    ]
+
+Go to urls.py inside boutique_ado
+
+    Add this path
+        path('', include('home.urls')),
+
+Add home app to settings.py installed apps
+
+After that add in the template directories
+
+    'DIRS': [
+            # Add route and custom allauth templates directory
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates', 'allauth'),
+        ],
+
+
+
+
+
 
 
 [Back to top](#walkthrough-steps)
