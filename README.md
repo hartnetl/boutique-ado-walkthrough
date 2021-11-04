@@ -167,6 +167,22 @@ Delete the openid and test folders - they will then revert to default allauth ve
 Create base.html file in templates  
 Copy bootstrap starter template (linked above)
 
+Edit starter template. Wrap code in jinja blocks - {% block meta %}, {% block corecss %}, {% block corejs %}  
+Add 3 extra blocks for extra versions of each  
+Inside the title add a {% block extra_title%}
+
+Add basic template to the body
+
+    <body>
+   
+    <header class="container-fluid fixed-top"></header>
+
+    {% if messages %}
+    <div class="message-container"></div>
+    {% endif %}
+    
+    </body>
+
 
 [Back to top](#walkthrough-steps)
 
