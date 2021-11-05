@@ -733,12 +733,56 @@ Now we need to apply fixtures to models
         So I added 'has_sizes' to the models with default set to true. ran migrations then ran the loaddate for products again and it worked.  
 
 
+Run your site and check the products show up in the admin panel 
+
 
 </details>
 
 
 <details>
 <summary>Video 2 - Products admin</summary>
+
+Go to your admin panel and check how everything looks
+* We want to change categorys to categories, show the friendly name of categpry and add have more fields in the products admin
+
+products/models.py
+* Under the category model add this to meta data
+
+        class Meta:
+            verbose_name_plural = 'Categories'
+
+products/admin.py
+* Add in how you want your admin panel to display your models
+
+        from django.contrib import admin
+        from .models import Product, Category
+
+
+        class ProductAdmin(admin.ModelAdmin):
+            list_display = (
+                'sku',
+                'name',
+                'category',
+                'price',
+                'rating',
+                'image',
+            )
+
+            ordering = ('sku',)
+
+
+        class CategoryAdmin(admin.ModelAdmin):
+            list_display = (
+                'friendly_name',
+                'name',
+            )
+
+
+        admin.site.register(Product, ProductAdmin)
+        admin.site.register(Category, CategoryAdmin)
+
+
+
 
 </details>
 
