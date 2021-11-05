@@ -511,10 +511,79 @@ Put two files in this: main-nav.html and mobile-top-header.html
         </li>
 
 </summary>
+</details>
+
+<details>
+<summary>Create html for main-nav </summary>
+
+        <!-- the main-nav id matches the id of the toggle button in the base templates  -->
+        <div class="collapse navbar-collapse" id="main-nav">
+            <ul class="navbar-nav w-auto mx-auto">
+
+                <!-- All products dropdown menu  -->
+
+                <li class="nav-item dropdown">
+                    <a class="logo-font font-weight-bold nav-link text-black mr-5" href="#" id="all-products-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        All Products
+                    </a>
+                    <div class="dropdown-menu border-0" aria-labelledby="all-products-link">
+                        <a href="" class="dropdown-item">By Price</a>
+                        <a href="" class="dropdown-item ">By Rating</a>
+                        <a href="" class="dropdown-item ">By Category</a>
+                        <a href="" class="dropdown-item">All Products</a>
+                    </div>
+                </li>
+
+                <!-- Clothing dropdown menu  -->
 
 
+                <li class="nav-item dropdown">
+                    <a class="logo-font font-weight-bold nav-link text-black mr-5" href="#" id="clothing-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Clothing
+                    </a>
+                    <div class="dropdown-menu border-0" aria-labelledby="clothing-link">
+                        <a href="" class="dropdown-item">Activewear &amp; Essentials</a>
+                        <a href="" class="dropdown-item">Jeans</a>
+                        <a href="" class="dropdown-item">Shirts</a>
+                        <a href="" class="dropdown-item">All Clothing</a>
+                    </div>
+                </li>
 
-Create a div underneath the div with id 'topnav' in the header
+                <!-- Homeware dropdown menu  -->
+
+                <li class="nav-item dropdown">
+                    <a class="logo-font font-weight-bold nav-link text-black mr-5" href="#" id="homeware-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Homeware
+                    </a>
+                    <div class="dropdown-menu border-0" aria-labelledby="homeware-link">
+                        <a href="" class="dropdown-item">Bed &amp; Bath</a>
+                        <a href="" class="dropdown-item">Kitchen &amp; Dining</a>
+                        <a href="" class="dropdown-item">All Homeware</a>
+                    </div>
+                </li>
+
+                <!-- special offers dropdown menu  -->
+
+                <li class="nav-item dropdown">
+                    <a class="logo-font font-weight-bold nav-link text-black" href="#" id="specials-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Special Offers
+                    </a>
+                    <div class="dropdown-menu border-0" aria-labelledby="specials-link">
+                        <a href="" class="dropdown-item">New Arrivals</a>
+                        <a href="" class="dropdown-item">Deals</a>
+                        <a href="" class="dropdown-item">Clearance</a>
+                        <a href="" class="dropdown-item">All Specials</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+</details>
+
+
+Now add these two to base.html
+
+Create a div underneath the div with id 'topnav' in the header 
 
         <div class="row bg-white">
             <nav class="navbar navbar-expand-lg navbar-light w-100">
@@ -531,6 +600,9 @@ Create a div underneath the div with id 'topnav' in the header
                 <h4 class="logo-font my-1">Free delivery on orders over ${{ free_shipping_threshold }}!</h4>
             </div>
         </div>
+
+
+
 
 [Back to top](#walkthrough-steps)
 </details>
