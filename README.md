@@ -740,7 +740,9 @@ Run your site and check the products show up in the admin panel
 
 
 <details>
-<summary>Video 2 - Products admin</summary>
+<summary>Video 2 - Products admin and views</summary>
+
+**CUSTOMISE ADMIN**
 
 Go to your admin panel and check how everything looks
 * We want to change categorys to categories, show the friendly name of categpry and add have more fields in the products admin
@@ -782,7 +784,46 @@ products/admin.py
         admin.site.register(Category, CategoryAdmin)
 
 
+**CREATE VIEWS**
 
+products/views.py - create the view to view all products
+
+        from django.shortcuts import render
+        from .models import Product
+
+
+        def all_products(request):
+            """ A view to show all products, including sorting and search queries """
+
+            products = Product.objects.all()
+
+            context = {
+                'products': products,
+            }
+
+            return render(request, 'products/products.html', context)
+
+products/urls.py - create url for your products view
+
+        from django.urls import path
+        from . import views
+
+        urlpatterns = [
+            path('', views.all_products, name='products')
+        ]
+
+    * Note: We can remove admin from our app urls.py
+
+boutique_ado/urls - add your allproducts url
+
+        path('products/', include('products.urls')),
+
+Create templates
+
+        mkdir -p products/templates/products
+
+    * Create products.html inside this new directory
+    
 
 </details>
 
