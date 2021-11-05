@@ -978,6 +978,94 @@ Go to base.css and add overlay css
 <details>
 <summary>Video 4 - Products detail</summary>
 
+Add url to products page in includes/main-nav and home/templates/home  
+
+Create product detail view in products/views.py
+
+        def product_detail(request, product_id):
+        """ A view to show individual product details """
+
+        product = get_object_or_404(Product, pk=product_id)
+
+        context = {
+            'product': product,
+        }
+
+        return render(request, 'products/product_detail.html', context)
+
+Create url for the product detail view in products/url
+
+        path('<product_id>', views.product_detail, name='product_detail'),
+
+
+Create template for the view 
+
+<detail>
+<summary>Reveal template</summary>
+
+        {% extends "base.html" %}
+        {% load static %}
+
+        {% block page_header %}
+            <div class="container header-container">
+                <div class="row">
+                    <div class="col"></div>
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block content %}
+            <div class="overlay"></div>
+            <div class="container-fluid">
+                <!-- one row split into two columns  -->
+                <div class="row">
+
+                    <!-- col 1: product image  -->
+
+                    <!-- offsetting pushes cols to the middle  -->
+                    <div class="col-12 col-md-6 col-lg-4 offset-lg-2">
+                        <div class="image-container my-5">
+                            {% if product.image %}
+                                <a href="{{ product.image.url }}" target="_blank">
+                                    <img class="card-img-top img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
+                                </a>
+                                {% else %}
+                                <a href="">
+                                    <img class="card-img-top img-fluid" src="{{ MEDIA_URL }}noimage.png" alt="{{ product.name }}">
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- col 2: product info  -->
+                    
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="product-details-container mb-5 mt-md-5">
+                            <p class="mb-0">{{ product.name }}</p>
+                            <p class="lead mb-0 text-left font-weight-bold">${{ product.price }}</p>
+                            {% if product.rating %}
+                                <small class="text-muted"><i class="fas fa-star mr-1"></i>{{ product.rating }} / 5</small>
+                            {% else %}
+                                <small class="text-muted">No Rating</small>
+                            {% endif %}
+                            <p class="mt-3">{{ product.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
+</detail>
+
+Fill in url product detail to each product in products.html
+
+        {% url 'product_detail' product.id %}
+
+
+Check it all works - and it should
+
+But in mobiles the header isn't pushing down the product cards. Let's add a media query for that now
+
 </details>
 
 [Back to top](#walkthrough-steps)

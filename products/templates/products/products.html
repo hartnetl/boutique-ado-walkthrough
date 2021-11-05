@@ -15,25 +15,34 @@
 
     <!-- This container has two rows: One to contain the page title and any currently selected categories and one for the products themselves.  -->
     <div class="container-fluid">
+
+        <!-- Header row  -->
+
         <div class="row">
             <div class="col text-center mt-3">
                 <h2 class="logo-font">Products</h2>
                 <hr class="w-50 mb-1">
             </div>
         </div>
+
+        <!-- Products row  -->
         <div class="row">
+            <!-- This row has 2 rows  -->
             <div class="product-container col-10 offset-1">
                 <div class="row mt-1 mb-2"></div>
+
+                <!-- row 2 - products  -->
+
                 <div class="row">
                     {% for product in products %}
                         <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
                             <div class="card h-100 border-0">
                                 {% if product.image %}
-                                <a href="">
+                                <a href="{% url 'product_detail' product.id %}">
                                     <img class="card-img-top img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
                                 </a>
                                 {% else %}
-                                <a href="">
+                                <a href="{% url 'product_detail' product.id %}">
                                     <img class="card-img-top img-fluid" src="{{ MEDIA_URL }}noimage.png" alt="{{ product.name }}">
                                 </a>
                                 {% endif %}
@@ -54,6 +63,9 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- This sets the size of the hr, depending on how many columns are there  -->
+
                         {% if forloop.counter|divisibleby:1 %}
                             <div class="col-12 d-sm-none mb-5">
                                 <hr>
