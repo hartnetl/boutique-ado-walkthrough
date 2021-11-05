@@ -6,6 +6,7 @@
 - [Authentication](#allauth-authentication)
 - [Base template setup](#setup-base-template)
 - [Home page template setup](#home-setup)
+- [Products setup](#product-setup)
 
 ##
 
@@ -46,6 +47,7 @@
 
 </details>
 
+<hr>
 
 ## Allauth authentication
 
@@ -151,6 +153,8 @@ Set up your templates directory
 
 </details>
 
+<hr>
+
 ## Setup base template
 <details>
 <summary>Click me</summary>
@@ -254,6 +258,7 @@ Test it worked
 
 </details>
 
+<hr>
 
 ## Home setup
 
@@ -510,7 +515,6 @@ Put two files in this: main-nav.html and mobile-top-header.html
             </a>
         </li>
 
-</summary>
 </details>
 
 <details>
@@ -577,7 +581,6 @@ Put two files in this: main-nav.html and mobile-top-header.html
                 </li>
             </ul>
         </div>
-
 </details>
 
 
@@ -601,8 +604,154 @@ Create a div underneath the div with id 'topnav' in the header
             </div>
         </div>
 
+</details>
+
+[Back to top](#walkthrough-steps)
+
+</details>
+
+<hr>
+
+## Product setup
+
+[ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/ff6e359891a240a0b92f16bf68d4851a/?child=first)
+
+<details>
+<summary>Click me</summary>
 
 
+<details>
+<summary>Video 1 - Adding products</summary>
+
+[image and fixtures](https://github.com/Code-Institute-Solutions/boutique_ado_images)
+**Note:**  In this video, we create the data in the database by uploading pre-written data from a file using fixtures.
+It is important to mention that this is not the only way to add data to your database. When you come to build your own project, if you do not have a file of data to load up, you can manually add your database entries into the database via the admin panel.
+<hr>
+
+Load in images to media folder - sourced from kaggle.com - from the images folder linked above  
+
+Create products app 
+
+    python3 manage.py startapp products
+
+Add products to installed apps in settings.py
+
+Create fixtures folder in products folder  
+Fixtures are used to load data very quickly into a django database so we don't have to do it all manually in the admin.   
+They are in the form of json files in this project  
+
+Add the category and products fixtures supplied in the link above to the fixtures folder
+
+    Example of product json entry
+
+        {
+        "pk": 1,
+        "model": "products.product",
+    // These are the value for each field in the model 
+        "fields": {
+            "sku": "pp5001340155",
+            "name": "Arizona Original Bootcut Jeans",
+            "description": "Bootcut jeans in our just-right original fit are comfortable and look great too.  5-pocket style sits below waist straight fit through seat and thigh bootcut leg 18\" leg opening cotton washable imported extended sizes and washes available online only",
+            "has_sizes": true,
+            "price": 53.99,
+        // This category value refers to the primary key (pk) of one of the categories in the other fixture file. 
+            "category": 6,
+            "rating": 4.6,
+            "image_url": "http://s7d9.scene7.com/is/image/JCPenney/DP0709201205510679M.tif?hei=380&amp;wid=380&op_usm=.4,.8,0,0&resmode=sharp2&op_usm=1.5,.8,0,0&resmode=sharp",
+            "image": "DP0709201205510679M.jpg"
+        }
+    },
+
+
+Create models for category and product
+
+* go to models.py in products app
+
+        from django.db import models
+
+        class Category(models.Model):
+            # programmatic name 
+            name = models.CharField(max_length=254)
+            # front end name 
+            friendly_name = models.CharField(max_length=254, null=True, blank=True)
+
+            def __str__(self):
+                return self.name
+
+            def get_friendly_name(self):
+                return self.friendly_name
+
+        class Product(models.Model):
+            category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
+            sku = models.CharField(max_length=254, null=True, blank=True)
+            name = models.CharField(max_length=254)
+            description = models.TextField()
+            price = models.DecimalField(max_digits=6, decimal_places=2)
+            rating = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+            image_url = models.URLField(max_length=1024, null=True, blank=True)
+            image = models.ImageField(null=True, blank=True)
+
+            def __str__(self):
+                return self.name
+
+* Do dry run of migrations
+
+        python3 manage.py makemigrations --dry-run
+
+    * We need Pillow, so let's install that 
+
+            pip3 install pillow
+
+    * Run migrations dry run again
+    * Run migrations
+
+            python3 manage.py makemigrations 
+
+    * Run migrate with plan flag
+
+            python3 manage.py migrate --plan
+
+    * Migrate
+
+            python3 manage.py migrate
+
+* Head to products/admin.py to register the two models to the admin panel
+
+        from django.contrib import admin
+        from .models import Product, Category
+
+        admin.site.register(Product)
+        admin.site.register(Category)
+
+Now we need to apply fixtures to models
+
+        python3 manage.py loaddata categories
+        python3 manage.py loaddata products
+
+        **note** In the walkthrough this worked fine. In mine I got this error  
+        django.core.exceptions.FieldDoesNotExist: Product has no field named 'has_sizes'  
+        So I added 'has_sizes' to the models with default set to true. ran migrations then ran the loaddate for products again and it worked.  
+
+
+
+</details>
+
+
+<details>
+<summary>Video 2 - Products admin</summary>
+
+</details>
+
+<details>
+<summary>Video 3 - Products template </summary>
+
+</details>
+
+
+<details>
+<summary>Video 4 - Products detail</summary>
+
+</details>
 
 [Back to top](#walkthrough-steps)
 </details>
