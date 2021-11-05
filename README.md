@@ -276,7 +276,7 @@ Structure the homepage template
         {% load static %}
 
         {% block page_header %}
-            <div class="container headeer-container">
+            <div class="container header-container">
                 <div class="row">
                     <div class="col">
                         
@@ -823,15 +823,157 @@ Create templates
         mkdir -p products/templates/products
 
     * Create products.html inside this new directory
-    
+
+            {% extends "base.html" %}
+            {% load static %}
+
+            {% block page_header %}
+                <div class="container header-container">
+                    <div class="row">
+                        <div class="col">
+                            
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+
+
+            {% block content %}
+
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            {{ products }}
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+
 
 </details>
 
 <details>
 <summary>Video 3 - Products template </summary>
 
+products/templates/products.html
+
+<details>
+<summary>Click to reveal html file</summary>
+
+        {% extends "base.html" %}
+        {% load static %}
+
+        {% block page_header %}
+            <div class="container header-container">
+                <div class="row">
+                    <div class="col"></div>
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block content %}
+            <!-- This overlay is to coverup the background image in the homepage -->
+            <div class="overlay"></div>
+
+            <!-- This container has two rows: One to contain the page title and any currently selected categories and one for the products themselves.  -->
+            <div class="container-fluid">
+
+                <!-- Header row  -->
+
+                <div class="row">
+                    <div class="col text-center mt-3">
+                        <h2 class="logo-font">Products</h2>
+                        <hr class="w-50 mb-1">
+                    </div>
+                </div>
+
+                <!-- Products row  -->
+                <div class="row">
+                    <!-- This row has 2 rows  -->
+                    <div class="product-container col-10 offset-1">
+                        <div class="row mt-1 mb-2"></div>
+
+                        <!-- row 2 - products  -->
+
+                        <div class="row">
+                            {% for product in products %}
+                                <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card h-100 border-0">
+                                        {% if product.image %}
+                                        <a href="">
+                                            <img class="card-img-top img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
+                                        </a>
+                                        {% else %}
+                                        <a href="">
+                                            <img class="card-img-top img-fluid" src="{{ MEDIA_URL }}noimage.png" alt="{{ product.name }}">
+                                        </a>
+                                        {% endif %}
+                                        <div class="card-body pb-0">
+                                            <p class="mb-0">{{ product.name }}</p>
+                                        </div>
+                                        <div class="card-footer bg-white pt-0 border-0 text-left">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <p class="lead mb-0 text-left font-weight-bold">${{ product.price }}</p>
+                                                    {% if product.rating %}
+                                                        <small class="text-muted"><i class="fas fa-star mr-1"></i>{{ product.rating }} / 5</small>
+                                                    {% else %}
+                                                        <small class="text-muted">No Rating</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- This sets the size of the hr, depending on how many columns are there  -->
+                                
+                                {% if forloop.counter|divisibleby:1 %}
+                                    <div class="col-12 d-sm-none mb-5">
+                                        <hr>
+                                    </div>
+                                {% endif %}                        
+                                {% if forloop.counter|divisibleby:2 %}
+                                    <div class="col-12 d-none d-sm-block d-md-block d-lg-none mb-5">
+                                        <hr>
+                                    </div>
+                                {% endif %}
+                                {% if forloop.counter|divisibleby:3 %}
+                                    <div class="col-12 d-none d-lg-block d-xl-none mb-5">
+                                        <hr>
+                                    </div>
+                                {% endif %}
+                                {% if forloop.counter|divisibleby:4 %}
+                                    <div class="col-12 d-none d-xl-block mb-5">
+                                        <hr>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
 </details>
 
+Go to base.css and add overlay css
+
+        .overlay {
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            position: fixed;
+            background: white;
+            /* -1 makes it sit behind the content  */
+            z-index: -1;
+        }
+    
+    * This will probably be used on most of the other pages
+
+
+</details>
 
 <details>
 <summary>Video 4 - Products detail</summary>
