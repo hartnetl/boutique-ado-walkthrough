@@ -7,8 +7,9 @@
 - [Base template setup](#setup-base-template)
 - [Home page template setup](#home-setup)
 - [Products setup](#product-setup)
+- [Products filtering and search](#product-filtering-and-search)
 
-##
+## Product filtering and search
 
 <details>
 <summary></summary>
@@ -1066,7 +1067,90 @@ Check it all works - and it should
 
 But in mobiles the header isn't pushing down the product cards. Let's add a media query for that now
 
+        /* pad the top a bit when navbar is collapsed on mobile */
+        @media (max-width: 991px) {
+            .header-container {
+                padding-top: 116px;
+            }
+
+            body {
+                height: calc(100vh - 116px);
+            }
+        }
+
 </details>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+
+## Product filtering and search
+
+[ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/0fb892bc636a44cf94b69d9f2aa9166a/?child=first)
+
+<details>
+<summary>part 1</summary>
+
+
+Add action to search bar in base.html and mobile-top-heder
+
+        {% url 'products' %}
+
+Update all_products view to add functionality to search bar get request
+
+        from django.shortcuts import render, get_object_or_404, redirect, reverse
+        from django.contrib import messages
+        from django.db.models import Q
+        from .models import Product
+
+
+        def all_products(request):
+            """ A view to show all products, including sorting and search queries """
+
+            products = Product.objects.all()
+            query = none
+
+            if request.GET:
+                if 'q' in request.GET:
+                    query = request.GET['q']
+                    if not query:
+                        messages.error(request, "You didn't enter any search criteria!")
+                        return redirect(reverse('products'))
+                    
+                # query can appear in name or description. Pipe is or. i makes it case insensitive 
+                    queries = Q(name__icontains=query) | Q(description__icontains=query)
+                    products = products.filter(queries)
+
+            context = {
+                'products': products,
+                'search_term' query,
+            }
+
+            return render(request, 'products/products.html', context)
+
+
+        def product_detail(request, product_id):
+            """ A view to show individual product details """
+
+            product = get_object_or_404(Product, pk=product_id)
+
+            context = {
+                'product': product,
+            }
+
+            return render(request, 'products/product_detail.html', context)
+            
+
+    * Q is a great way to handle queries - it allows for searches to get results for names or descriptions.  
+    * Using filters would mean it would have to appear in both to get a hit
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>part 2</summary>
 
 [Back to top](#walkthrough-steps)
 </details>
