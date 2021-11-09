@@ -1090,7 +1090,7 @@ But in mobiles the header isn't pushing down the product cards. Let's add a medi
 [ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/0fb892bc636a44cf94b69d9f2aa9166a/?child=first)
 
 <details>
-<summary>part 1</summary>
+<summary>part 1 - create search function</summary>
 
 
 Add action to search bar in base.html and mobile-top-heder
@@ -1150,7 +1150,68 @@ Update all_products view to add functionality to search bar get request
 </details>
 
 <details>
-<summary>part 2</summary>
+<summary>part 2 - searching by category</summary>
+<br>
+
+- Create links to the categories in main-nav.html
+
+            <li class="nav-item dropdown">
+                <a class="logo-font font-weight-bold nav-link text-black mr-5" href="#" id="clothing-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Clothing
+                </a>
+                <div class="dropdown-menu border-0" aria-labelledby="clothing-link">
+
+                <!-- 
+                The links first point to the products URL. Then a question mark to indicate we're about to pass the category parameter.
+                Followed by activewear and essentials separated by a comma. This syntax ensures we end up with a comma-separated string in the view. 
+                -->
+
+                    <a href="{% url 'products' %}?category=activewear,essentials" class="dropdown-item">Activewear &amp; Essentials</a>
+                    <a href="{% url 'products' %}?category=jeans" class="dropdown-item">Jeans</a>
+                    <a href="{% url 'products' %}?category=shirts" class="dropdown-item">Shirts</a>
+                    <a href="{% url 'products' %}?category=activewear,essentials,jeans,shirts" class="dropdown-item">All Clothing</a>
+                </div>
+            </li>
+
+Go to products/views.py to alter the all_products view
+
+- set category to none
+
+        category = None
+
+- Check if the category search exists
+
+        if request.GET:
+            if 'category' in request.GET:
+                # if it exists, split it at the commas 
+                categories = request.GET['category'].split(',')
+                # filter the current query to all products that have the specifed category
+                # NOTEE: Using double underscores in common when making queries in django
+                # Using it here means we're looking for the name field of the category model.
+                products = products.filter(category__name__in=categories)
+
+- import Category from models to display them to the user
+
+        from .models import Product, Category
+
+- Filter by categories whose names are in the url
+
+        categories = Category.objects.filter(name__in=categories)
+
+    Doing this turns the url strings into actual objects
+
+- Add current categories to context to be used by the template later
+
+          context = {
+                'products': products,
+                'search_term': query,
+                'current_categories': categories,
+            }
+
+
+All filtering for clothing categories should work
+
+Apply the same url logic to all other categories on the page (main-nav.html)
 
 [Back to top](#walkthrough-steps)
 </details>
