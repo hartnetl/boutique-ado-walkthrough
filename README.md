@@ -1247,6 +1247,10 @@ Add filtering urls to main nav.html
 
 Alter the all_products view to include this
 
+- import Lower 
+
+        from django.db.models.functions import Lower
+
 - set sort and direction to none
 
         sort = None
@@ -1291,7 +1295,7 @@ Alter the all_products view to include this
 </details>
 
 <details>
-<summary>PART 2 </summary>
+<summary>PART 2 - get filter categories working </summary>
 
 Add the category to each individual product card and make it a link to the actual category
 
@@ -1379,7 +1383,80 @@ Sort categories by name instead of id - all_products view
 </details>
 
 <details>
-<summary>PART 3</summary>
+<summary>PART 3 - sort filter box and back to top button</summary>
+
+Add jquery to products.html for sort button
+
+        
+        {% block postloadjs %}
+        {{ block.super }}
+        <!-- block.super appends the block, instead of replacing it  -->
+
+        <script type="text/javascript">
+            // this jquery code is for the sort button 
+            // capture change event from sort selector 
+            $('#sort-selector').change(function () {
+                var selector = $(this);
+                var currentUrl = new URL(window.location);
+
+                // the value here refers to the value attribute from the selected option element in the selector box 
+                var selectedVal = selector.val();
+                if (selectedVal != "reset") {
+                    // split the value and sort the first value 
+                    var sort = selectedVal.split("_")[0];
+                    // specify the direction based on the second item
+                    var direction = selectedVal.split("_")[1];
+
+                    // replace the get parFameters in the URL using the search params.set method from the URL object
+                    currentUrl.searchParams.set("sort", sort);
+                    currentUrl.searchParams.set("direction", direction);
+
+                    // With the new URL now constructed, replace the current location using window.location.replace 
+                    // with the updated current URL. Replacing the location will also cause the page to reload which 
+                    // will resort the products accordingly.
+                    window.location.replace(currentUrl);
+                    // if user has selected reset 
+                } else {
+                    // delete the sort and direction get parameters and then replace the location.
+                    currentUrl.searchParams.delete("sort");
+                    currentUrl.searchParams.delete("direction");
+
+                    window.location.replace(currentUrl);
+                }
+            })
+        </script>
+        {% endblock %}
+
+
+Add back to top button to end of page 
+
+        <div class="btt-button shadow-sm rounded-0 border border-black">
+            <a class="btt-link d-flex h-100">
+                <i class="fas fa-arrow-up text-black mx-auto my-auto"></i>
+            </a>	
+        </div>
+
+Add the js to make the button work 
+
+        <script type="text/javascript">
+            $('.btt-link').click(function(e) {
+                window.scrollTo(0,0)
+            })
+        </script>
+
+Add css for the button
+
+        .btt-button {
+            height: 42px;
+            width: 42px;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .btt-link {
+            cursor: pointer;
+        }
 
 [Back to top](#walkthrough-steps)
 </details>
