@@ -1306,7 +1306,74 @@ Add the category to each individual product card and make it a link to the actua
                 </p>
             {% endif %}
 
-- Add it to products/templates/product_detail.html too
+- Add it to products/templates/product_detail.html too in the same place above ratings
+- Create category links under the products header of products.html
+
+        {% for c in current_categories %}
+            <a class="category-badge text-decoration-none" href="{% url 'products' %}?category={{ c.name }}">
+                <span class="p-2 mt-2 badge badge-white text-black rounded-0 border border-dark">{{ c.friendly_name }}</span>
+            </a>
+        {% endfor %}
+
+- Pop sort functionality above the list of products 
+
+        <!-- row 1 - sort options  -->
+            <div class="row mt-1 mb-2">
+                <div class="product-container col-10 offset-1">
+                    <div class="row mt-1 mb-2">
+                        <!-- sort select is on top on mobile, but last for medium + screens  -->
+                        <div class="col-12 col-md-6 my-auto order-md-last d-flex justify-content-center justify-content-md-end">
+                            <!-- sort select box  -->
+                            <div class="sort-select-wrapper w-50">
+                                <select id="sort-selector" class="custom-select custom-select-sm rounded-0 border border-{% if current_sorting != 'None_None' %}info{% else %}black{% endif %}">
+                                    <!-- Here we're checking the current_sorting returned by the view to determine which option was selected  -->
+                                    <!-- JS is used to make this box work  -->
+                                    <option value="reset" {% if current_sorting == 'None_None' %}selected{% endif %}>
+                                        Sort by...</option>
+                                    <option value="price_asc"
+                                        {% if current_sorting == 'price_asc' %}selected{% endif %}>Price (low to high)
+                                    </option>
+                                    <option value="price_desc"
+                                        {% if current_sorting == 'price_desc' %}selected{% endif %}>Price (high to low)
+                                    </option>
+                                    <option value="rating_asc"
+                                        {% if current_sorting == 'rating_asc' %}selected{% endif %}>Rating (low to high)
+                                    </option>
+                                    <option value="rating_desc"
+                                        {% if current_sorting == 'rating_desc' %}selected{% endif %}>Rating (high to
+                                        low)</option>
+                                    <option value="name_asc" {% if current_sorting == 'name_asc' %}selected{% endif %}>
+                                        Name (A-Z)</option>
+                                    <option value="name_desc"
+                                        {% if current_sorting == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                                    <option value="category_asc"
+                                        {% if current_sorting == 'category_asc' %}selected{% endif %}>Category (A-Z)
+                                    </option>
+                                    <option value="category_desc"
+                                        {% if current_sorting == 'category_desc' %}selected{% endif %}>Category (Z-A)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- product count -->
+                        <!-- sort select is on top on mobile, and first for medium + screens  -->
+                        <div class="col-12 col-md-6 order-md-first">
+                            <p class="text-muted mt-3 text-center text-md-left">
+                                {% if search_term or current_categories or current_sorting != 'None_None' %}
+                                <span class="small"><a href="{% url 'products' %}">Products Home</a> | </span>
+                                {% endif %}
+                                {{ products|length }} Products{% if search_term %} found for
+                                <strong>"{{ search_term }}"</strong>{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+Sort categories by name instead of id - all_products view
+
+        if sortkey == 'category':
+            sortkey = 'category__name'
 
 [Back to top](#walkthrough-steps)
 </details>
