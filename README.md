@@ -1740,6 +1740,70 @@ We'll use this functionality to display the total cost of the current shopping b
     - start server and in preview add products to bag. The total in navbar should update and you should see basket information displayed in bag view
     - [here is the video reviewing this](https://youtu.be/E7dDIN-tElQ?t=238)
 
+- Let's add content to shopping bag table (bag html)
+    - It's going to have five columns containing the product image, some info about it, the per-item price the quantity, and the subtotal for that item, and each row will be a new item.
+
+                      <table class="table table-sm table-borderless">
+                            <thead class="text-black">
+                                <tr>
+                                    <th scope="col">Product Info</th>
+                                    <th scope="col"></th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Qty</th>
+                                    <th scope="col">Subtotal</th>
+                                </tr>
+                            </thead>
+
+                            {% for item in bag_items %}
+                                <tr>
+                                    <td class="p-3 w-25">
+                                        <img class="img-fluid rounded" src="{{ item.product.image.url }}">
+                                    </td>
+                                    <td class="py-3">
+                                        <p class="my-0"><strong>{{ item.product.name }}</strong></p>
+                                        <p class="my-0 small text-muted">SKU: {{ item.product.sku|upper }}</p>
+                                    </td>
+                                    <td class="py-3">
+                                        <p class="my-0">${{ item.product.price }}</p>
+                                    </td>
+                                    <td class="py-3 w-25">
+                                        <p class="my-0">{{ item.quantity }}</p>
+                                    </td>
+                                    <td class="py-3">
+                                        <p class="my-0">${{ item.product.price }}</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="5" class="pt-5 text-right">
+                                    <h6><strong>Bag Total: ${{ total|floatformat:2 }}</strong></h6>
+                                    <h6>Delivery: ${{ delivery|floatformat:2 }}</h6>
+                                    <h4 class="mt-4"><strong>Grand Total: ${{ grand_total|floatformat:2 }}</strong></h4>
+                                    {% if free_delivery_delta > 0 %}
+                                        <p class="mb-1 text-danger">
+                                            You could get free delivery by spending just <strong>${{ free_delivery_delta }}</strong> more!
+                                        </p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-right">
+                                    <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 btn-lg">
+                                        <span class="icon">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </span>
+                                        <span class="text-uppercase">Keep Shopping</span>
+                                    </a>
+                                    <a href="" class="btn btn-black rounded-0 btn-lg">
+                                        <span class="text-uppercase">Secure Checkout</span>
+                                        <span class="icon">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
 [Back to top](#walkthrough-steps)
 </details>
 
