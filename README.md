@@ -10,8 +10,9 @@
 - [Products filtering and search](#product-filtering-and-search)
 - [Product sorting](#product-sorting)
 - [Shopping bag](#shopping-bag)
+- [Add products to bag](#adding-products-to-bag)
 
-## Shopping bag
+## Adding products to bag
 
 <details>
 <summary></summary>
@@ -1471,6 +1472,8 @@ Add css for the button
 <details>
 <summary>Create the bag for customers to put things into </summary>
 
+CREATE THE BAG 
+
 - Create the app 'bag'
 
         python3 manage.py startapp bag
@@ -1502,7 +1505,7 @@ Add css for the button
 
 - Include bag urls in main urls.py file
 
-    path('bag/', include('bag.urls')),
+        path('bag/', include('bag.urls')),
 
 - base.html
     - add link to view bag 
@@ -1541,7 +1544,169 @@ Add css for the button
                 </div>
             </div>
 
+
+ADD FUNCTIONALITY TO TRACK BAG CONTENTS
+
+- create contexts.py inside bag app
+
+- Add contexts.py to main settings.py under context_processor
+
+            'bag.contexts.bag_contents',
+
+- Add delivery cost variables to bottom of settings.py
+
+        FREE_DELIVERY_THRESHOLD = 50
+        STANDARD_DELIVERY_PERCENTAGE = 10
+
+- Add content to contexts.py
+
+        from decimal import Decimal
+        from django.conf import settings
+
+        def bag_contents(request):
+            """
+            This is a context processor.
+            Its purpose is to make this dictionary available to all templates across the entire application
+            Don't forget to add this to the context processors in settings.py to make it available throughout the app
+            """
+
+            # List for the bag items to live 
+            bag_items = []
+            # starting total 
+            total = 0
+            # empty basket
+            product_count = 0
+
+            if total < settings.FREE_DELIVERY_THRESHOLD:
+                # Decimal is less susceptible to rounding errors than using Float. Always use this for money
+                delivery = total * Decimal(settings.STANDARD_DELIVERY_PERCENTAGE / 100)
+                # Let user how much more they need for free shipping
+                free_delivery_delta = settings.FREE_DELIVERY_THRESHOLD - total
+            else:
+                delivery = 0
+                free_delivery_delta = 0
+            
+            grand_total = delivery + total
+            
+            context = {
+                'bag_items': bag_items,
+                'total': total,
+                'product_count': product_count,
+                'delivery': delivery,
+                'free_delivery_delta': free_delivery_delta,
+                'free_delivery_threshold': settings.FREE_DELIVERY_THRESHOLD,
+                'grand_total': grand_total,
+            }
+
+            return context
+
 [Back to top](#walkthrough-steps)
 </details>
 
 <hr>
+
+## Adding products to bag
+
+[ci videos](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/f324de58c90e47bd9497bf5839cf1859/?child=first)
+
+<details>
+<summary>PART 1</summary>
+
+- product_detail.html
+
+    - Add form to add item to bag under the product description
+
+            <form class="form" action=" " method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="col-12">
+                        <p class="mt-3"><strong>Quantity:</strong></p>
+                        <div class="form-group w-50">
+                            <div class="input-group">
+                                <input class="form-control qty_input" type="number" name="quantity" value="1" min="1" max="99" data-item_id="{{ product.id }}" id="id_qty_{{ product.id }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 mt-5">
+                            <span class="icon">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+                            <span class="text-uppercase">Keep Shopping</span>
+                        </a>
+                        <input type="submit" class="btn btn-black rounded-0 text-uppercase mt-5" value="Add to Bag">
+                    </div>
+                    <input type="hidden" name="redirect_url" value="{{ request.path }}">
+                </div>
+            </form>
+
+- Add css for btn-outline-black
+
+        .btn-outline-black {
+            background: white;
+            color: black !important; /* use important to override link colors for <a> elements */
+            border: 1px solid black;
+        }
+
+- write the view to handle the above form (bag/views.py)
+
+        def add_to_bag(request, item_id):
+            """ Add a quantity of the specified product to the shopping bag """
+
+            quantity = int(request.POST.get('quantity'))
+            redirect_url = request.POST.get('redirect_url')
+            bag = request.session.get('bag', {})
+
+            if item_id in list(bag.keys()):
+                bag[item_id] += quantity
+            else:
+                bag[item_id] = quantity
+
+            request.session['bag'] = bag
+            print(request.session['bag'])
+            return redirect(redirect_url)
+
+
+- Create url for add_to_bag view (bag/urls.py)
+
+        path('add/<item_id>/', views.add_to_bag, name='add_to_bag'),
+
+- Add url to action in form (product_detail.html)
+
+    
+
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 4</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 5</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 6</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
