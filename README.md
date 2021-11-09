@@ -1610,7 +1610,7 @@ ADD FUNCTIONALITY TO TRACK BAG CONTENTS
 [ci videos](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/f324de58c90e47bd9497bf5839cf1859/?child=first)
 
 <details>
-<summary>PART 1</summary>
+<summary>PART 1 - creating add to bag functionality</summary>
 
 - product_detail.html
 
@@ -1674,15 +1674,71 @@ ADD FUNCTIONALITY TO TRACK BAG CONTENTS
 
 - Add url to action in form (product_detail.html)
 
-    
-
-
+        {% url 'add_to_bag' product.id %}
 
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
-<summary>PART 2</summary>
+<summary>PART 2 - update context processor to make bag contents available across the site</summary>
+
+**INTRO:** In the previous video, we set up the add to bag view in the bag app which ultimately resulted in the creation of a session variable called bag which contains all the items the user would like to purchase.
+Because it's a session variable we can access it anywhere we can access the request object like in our views or the custom context processor we made.
+In this video, we'll access the shopping bag stored in the session within the context processor in order to add all the bags current items to the context of all templates.
+We'll use this functionality to display the total cost of the current shopping bag in the navbar and also start rendering items in the shopping bag template.
+
+<hr>
+
+- Remove print statement from the end of the 'add to bag' view
+- Update contexts.py
+
+        from decimal import Decimal
+        from django.conf import settings
+        from django.shortcuts import get_object_or_404
+        from products.models import Product
+
+        def bag_contents(request):
+            """
+            This is a context processor.
+            Its purpose is to make this dictionary available to all templates across the entire application
+            Don't forget to add this to the context processors in settings.py to make it available throughout the app
+            """
+
+            # List for the bag items to live 
+            bag_items = []
+            # starting total 
+            total = 0
+            # empty basket
+            product_count = 0
+            # Access the session's shopping bag
+            bag = request.session.get('bag', {})
+
+            # For each item and quantity in bag
+            for item_id, quantity in bag.items():
+                # Get the product
+                product = get_object_or_404(Product, pk=item_id)
+                # Add its quantity times the price to the total
+                total += quantity * product.price
+                # Increment the product count by the quantity
+                product_count += quantity
+                # add a dictionary to the list of bag items containing the id, quantity and the product object itself.
+                bag_items.append({
+                    'item_id': item_id,
+                    'quantity': quantity,
+                    'product': product,
+                })
+
+- go to bag.html template
+    - render the bag items to ensure it's working
+
+                 {% if bag_items %}
+                    <div class="table-responsive rounded">
+                        {{ bag_items }}
+                    </div>
+                {% else %}
+
+    - start server and in preview add products to bag. The total in navbar should update and you should see basket information displayed in bag view
+    - [here is the video reviewing this](https://youtu.be/E7dDIN-tElQ?t=238)
 
 [Back to top](#walkthrough-steps)
 </details>

@@ -28,6 +28,4 @@ def add_to_bag(request, item_id):
         bag[item_id] = quantity
 
     request.session['bag'] = bag
-    # This print shows us what's in the bag before the functionality is added to the front end
-    print(request.session['bag'])
     return redirect(redirect_url)

@@ -1,5 +1,7 @@
 from decimal import Decimal
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from products.models import Product
 
 def bag_contents(request):
     """
@@ -14,6 +16,23 @@ def bag_contents(request):
     total = 0
     # empty basket
     product_count = 0
+    # Access the session's shopping bag
+    bag = request.session.get('bag', {})
+
+    # For each item and quantity in bag
+    for item_id, quantity in bag.items():
+        # Get the product
+        product = get_object_or_404(Product, pk=item_id)
+        # Add its quantity times the price to the total
+        total += quantity * product.price
+        # Increment the product count by the quantity
+        product_count += quantity
+        # add a dictionary to the list of bag items containing the id, quantity and the product object itself.
+        bag_items.append({
+            'item_id': item_id,
+            'quantity': quantity,
+            'product': product,
+        })
 
     if total < settings.FREE_DELIVERY_THRESHOLD:
         # Decimal is less susceptible to rounding errors than using Float. Always use this for money
