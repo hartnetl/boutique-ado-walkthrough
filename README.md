@@ -1177,7 +1177,7 @@ Go to products/views.py to alter the all_products view
 
 - set category to none
 
-        category = None
+        categories = None
 
 - Check if the category search exists
 

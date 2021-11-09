@@ -10,7 +10,7 @@ def all_products(request):
     products = Product.objects.all()
     # Setting this to none means you don't get an error if there is no search 
     query = None
-    category = None
+    categories = None
 
     if request.GET:
 
