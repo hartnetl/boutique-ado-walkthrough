@@ -9,8 +9,9 @@
 - [Products setup](#product-setup)
 - [Products filtering and search](#product-filtering-and-search)
 - [Product sorting](#product-sorting)
+- [Shopping bag](#shopping-bag)
 
-## 
+## Shopping bag
 
 <details>
 <summary></summary>
@@ -1457,6 +1458,88 @@ Add css for the button
         .btt-link {
             cursor: pointer;
         }
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<hr>
+
+## Shopping bag
+
+[ci video](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/9c06563251a34ed19f5d4273ab4d55ab/?child=first)
+
+<details>
+<summary>Create the bag for customers to put things into </summary>
+
+- Create the app 'bag'
+
+        python3 manage.py startapp bag
+
+- Add it to installed app in settings
+
+- Start with the simplest view which will render the shopping bag page that as of right now doesn't exist.
+
+        from django.shortcuts import render
+
+        # Create your views here.
+
+        def view_bag(request):
+            """ A view that renders the bag contents page """
+
+            return render(request, 'bag/bag.html')
+
+- Create bag.html inside a bag folder inside a templates folder inside the bag folder
+    - Copy the structure from the home page but remove content
+
+- create urls.py
+
+        from django.urls import path
+        from . import views
+
+        urlpatterns = [
+            path('', views.view_bag, name='view_bag')
+        ]
+
+- Include bag urls in main urls.py file
+
+    path('bag/', include('bag.urls')),
+
+- base.html
+    - add link to view bag 
+    
+            {% url 'view_bag'%}
+
+- Add it to the mobile -top-nav too
+- start server and check links work in your preview
+
+- Add content to bag.html
+
+            <div class="overlay"></div>
+            <div class="container mb-2">
+                <div class="row">
+                    <div class="col">
+                        <hr>
+                        <h2 class="logo-font mb-4">Shopping Bag</h2>
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        {% if bag_items %}
+                            <div class="table-responsive rounded"></div>
+                        {% else %}
+                            <p class="lead mb-5">Your bag is empty.</p>
+                            <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 btn-lg">
+                                <span class="icon">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                                <span class="text-uppercase">Keep Shopping</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
 
 [Back to top](#walkthrough-steps)
 </details>
