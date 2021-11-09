@@ -8,8 +8,9 @@
 - [Home page template setup](#home-setup)
 - [Products setup](#product-setup)
 - [Products filtering and search](#product-filtering-and-search)
+- [Product sorting](#product-sorting)
 
-## Product filtering and search
+## 
 
 <details>
 <summary></summary>
@@ -1083,7 +1084,7 @@ But in mobiles the header isn't pushing down the product cards. Let's add a medi
 [Back to top](#walkthrough-steps)
 </details>
 
-
+<hr>
 
 ## Product filtering and search
 
@@ -1215,3 +1216,90 @@ Apply the same url logic to all other categories on the page (main-nav.html)
 
 [Back to top](#walkthrough-steps)
 </details>
+
+<hr>
+
+## Product sorting
+
+[CI videos](https://learn.codeinstitute.net/courses/course-v1:CodeInstitute+EA101+2021_T1/courseware/eb05f06e62c64ac89823cc956fcd8191/a66216c1383941c4897921a732f59237/?child=first)
+
+<details>
+<summary>PART 1 - filter by price, rating and category</summary>
+
+<br>
+
+Add filtering urls to main nav.html
+
+        <li class="nav-item dropdown">
+            <a class="logo-font font-weight-bold nav-link text-black mr-5" href="#" id="all-products-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                All Products
+            </a>
+            <div class="dropdown-menu border-0" aria-labelledby="all-products-link">
+                <!-- sort price in ascending order  -->
+                <a href="{% url 'products' %}?sort=price&direction=asc" class="dropdown-item">By Price</a>
+                <!-- sort rating in descending order  -->
+                <a href="{% url 'products' %}?sort=rating&direction=desc" class="dropdown-item ">By Rating</a>
+                <a href="{% url 'products' %}?sort=category&direction=asc" class="dropdown-item ">By Category</a>
+                <a href="{% url 'products' %}" class="dropdown-item">All Products</a>
+            </div>
+        </li>
+
+
+Alter the all_products view to include this
+
+- set sort and direction to none
+
+        sort = None
+        direction = None
+
+- Check if sort in query. If it is then sort the items (using a renamed variable called sortkey)
+    - If it is, we also check if there is a direction. If it's listed as desc, reverse the order of sortkey
+    - If there is no direction specified, list them in regular order
+
+            if request.GET:
+
+                # check if sort is in query
+                if 'sort' in request.GET:
+                    sortkey = request.GET['sort']
+                    # renaming sort to sortkey preserves the original name from being set to lower
+                    sort = sortkey
+                    if sortkey == 'name':
+                        sortkey = 'lower_name'
+                        products = products.annotate(lower_name=Lower('name'))
+
+                    # if sort is there, also check for direction
+                    if 'direction' in request.GET:
+                        direction = request.GET['direction']
+                        if direction == 'desc':
+                            sortkey = f'-{sortkey}'
+                    products = products.order_by(sortkey)
+
+- Return the current sorting methodology to the template
+
+        current_sorting = f'{sort}_{direction}'
+
+- Add sorting to context
+
+        context = {
+            'products': products,
+            'search_term': query,
+            'current_categories': categories,
+            'current_sorting': current_sorting,
+        }
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>PART 3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<hr>

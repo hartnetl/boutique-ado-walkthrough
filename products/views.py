@@ -11,10 +11,28 @@ def all_products(request):
     # Setting this to none means you don't get an error if there is no search 
     query = None
     categories = None
+    sort = None
+    direction = None
 
     if request.GET:
 
-        # check if the category exists 
+        # check if sort is in query
+        if 'sort' in request.GET:
+            sortkey = request.GET['sort']
+            # renaming sort to sortkey preserves the original name from being set to lower
+            sort = sortkey
+            if sortkey == 'name':
+                sortkey = 'lower_name'
+                products = products.annotate(lower_name=Lower('name'))
+
+            # if sort is there, also check for direction
+            if 'direction' in request.GET:
+                direction = request.GET['direction']
+                if direction == 'desc':
+                    sortkey = f'-{sortkey}'
+            products = products.order_by(sortkey)
+
+        # check if the category exists
         if 'category' in request.GET:
             # if it exists, split it at the commas 
             categories = request.GET['category'].split(',')
@@ -41,10 +59,15 @@ def all_products(request):
             queries = Q(name__icontains=query) | Q(description__icontains=query)
             products = products.filter(queries)
 
+
+    current_sorting = f'{sort}_{direction}'
+
     context = {
         'products': products,
         'search_term': query,
         'current_categories': categories,
+        # If no sorting, the below value will be none_none 
+        'current_sorting': current_sorting,
     }
 
     return render(request, 'products/products.html', context)
