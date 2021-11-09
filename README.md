@@ -1291,7 +1291,22 @@ Alter the all_products view to include this
 </details>
 
 <details>
-<summary>PART 2</summary>
+<summary>PART 2 </summary>
+
+Add the category to each individual product card and make it a link to the actual category
+
+- products/templates/products.html
+    - Add category if statement above rating if statement
+
+            {% if product.category %}
+                <p class="small mt-1 mb-0">
+                    <a class="text-muted" href="{% url 'products' %}?category={{ product.category.name }}">
+                        <i class="fas fa-tag mr-1"></i>{{ product.category.friendly_name }}
+                    </a>
+                </p>
+            {% endif %}
+
+- Add it to products/templates/product_detail.html too
 
 [Back to top](#walkthrough-steps)
 </details>
