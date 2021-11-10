@@ -1968,13 +1968,108 @@ We'll use this functionality to display the total cost of the current shopping b
                         'size': size,
                     })
 
-- Add this to shopping bag template
-
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
-<summary>PART 5</summary>
+<summary>PART 5 - Add increment/decrement buttons</summary>
+
+**Update the quantity selector**
+
+- Go to product_detail page
+
+                        <div class="col-12">
+                            <p class="mt-3"><strong>Quantity:</strong></p>
+                            <div class="form-group w-50">
+                                <div class="input-group">
+
+                                    <div class="input-group-prepend">
+                                        <!-- These IDs are for the javascript  -->
+                                        <button class="decrement-qty btn btn-black rounded-0" 
+                                            data-item_id="{{ product.id }}" id="decrement-qty_{{ product.id }}">
+                                            <span class="icon">
+                                                <i class="fas fa-minus"></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <input class="form-control qty_input" type="number"
+                                        name="quantity" value="1" min="1" max="99"
+                                        data-item_id="{{ product.id }}"
+                                        id="id_qty_{{ product.id }}">
+
+                                    <div class="input-group-append">
+                                        <button class="increment-qty btn btn-black rounded-0"
+                                            data-item_id="{{ product.id }}" id="increment-qty_{{ product.id }}">
+                                            <span class="icon">
+                                                <i class="fas fa-plus"></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+- write the javascript (as an include, as it will be reused in the shoppong bag page) to make the buttons work
+
+    - products/templates/includes/quantity_input_script.html
+
+                <script type="text/javascript">
+
+                // Disable +/- buttons outside 1-99 range
+                function handleEnableDisable(itemId) {
+                    // get current quantity value based on itemId 
+                    // the id is the id attribute on the input box in product detail page 
+                    var currentValue = parseInt($(`#id_qty_${itemId}`).val());
+                    var minusDisabled = currentValue < 2;
+                    var plusDisabled = currentValue > 98;
+                    // prop sets disabled setting to true/false 
+                    $(`#decrement-qty_${itemId}`).prop('disabled', minusDisabled);
+                    $(`#increment-qty_${itemId}`).prop('disabled', plusDisabled);
+                }
+
+                // Ensure proper enabling/disabling of all inputs on page load
+                var allQtyInputs = $('.qty_input');
+                for(var i = 0; i < allQtyInputs.length; i++){
+                    var itemId = $(allQtyInputs[i]).data('item_id');
+                    handleEnableDisable(itemId);
+                }
+
+                // Check enable/disable every time the input is changed
+                $('.qty_input').change(function() {
+                    var itemId = $(this).data('item_id');
+                    handleEnableDisable(itemId);
+                });
+
+                // Increment quantity
+                $('.increment-qty').click(function(e) {
+                    // prevent default action of button 
+                e.preventDefault();
+                    // closest goes up the dom, find goes down 
+                    // So from the clicked button go up to the first input group class, 
+                    // then go down to find the first quantity input
+                var closestInput = $(this).closest('.input-group').find('.qty_input')[0];
+                // Cache that value
+                var currentValue = parseInt($(closestInput).val());
+                //  set the input boxes new value to the current value plus one.
+                $(closestInput).val(currentValue + 1);
+                //    call function to disable/enable buttons each time a button is clicked 
+                var itemId = $(this).data('item_id');
+                handleEnableDisable(itemId);
+                });
+
+                // Decrement quantity
+                // Same as above but -1 instead of + 
+                $('.decrement-qty').click(function(e) {
+                e.preventDefault();
+                var closestInput = $(this).closest('.input-group').find('.qty_input')[0];
+                var currentValue = parseInt($(closestInput).val());
+                $(closestInput).val(currentValue - 1);
+                var itemId = $(this).data('item_id');
+                handleEnableDisable(itemId);
+                });
+            </script>
+
+
 
 [Back to top](#walkthrough-steps)
 </details>
