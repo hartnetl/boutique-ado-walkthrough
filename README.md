@@ -2075,7 +2075,96 @@ We'll use this functionality to display the total cost of the current shopping b
 </details>
 
 <details>
-<summary>PART 6</summary>
+<summary>PART 6 - add quantity selector to shopping bag pages </summary>
 
+[youtube video](https://youtu.be/0rRNZa7BR_Y)
+
+* Replace quantity on bag.html with form with POST method
+
+        <form class="form update-form" method="POST" action="">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <button class="decrement-qty btn btn-sm btn-black rounded-0" 
+                                                            data-item_id="{{ item.item_id }}" id="decrement-qty_{{ item.item_id }}">
+                                                            <span>
+                                                                <i class="fas fa-minus fa-sm"></i>
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                    <input class="form-control form-control-sm qty_input" type="number"
+                                                        name="quantity" value="{{ item.quantity }}" min="1" max="99"
+                                                        data-item_id="{{ item.item_id }}"
+                                                        id="id_qty_{{ item.item_id }}">
+                                                    <div class="input-group-append">
+                                                        <button class="increment-qty btn btn-sm btn-black rounded-0"
+                                                            data-item_id="{{ item.item_id }}" id="increment-qty_{{ item.item_id }}">
+                                                            <span>
+                                                                <i class="fas fa-plus fa-sm"></i>
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                    {% if item.product.has_sizes %}
+                                                        <input type="hidden" name="product_size" value="{{ item.size }}">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </form>
+
+- Check it's working on the server
+    - Quantity isn't showing on items with sizes - issue with context. 
+    - In bag contents, for the code where size is supplied change this:
+
+                    'quantity': item_data,
+
+    - To this     
+
+                    'quantity': quantity,
+
+- Now let's make the increment buttons on the bag page work by copying the end of the product_detail page
+
+            {% block postloadjs %}
+            {{ block.super }}
+            {% include 'products/includes/quantity_input_script.html' %}
+            {% endblock %}
+
+- There's currently no way to submit the form. Handle that with JS
+    - Add these under the form to update/remove items
+
+                <a class="update-link text-info"><small>Update</small></a>
+                <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-size="{{ item.size }}"><small>Remove</small></a>
+
+    - Write the JS to handle these two being clicked at the bottom of bag.html
+                
+                <script type="text/javascript">
+                    // Update quantity on click
+                    // use the previous method to find the most recently seen update form in the 
+                    // Dom. Store the form in a variable and then call the forms submit method.
+                    $('.update-link').click(function(e) {
+                        var form = $(this).prev('.update-form');
+                        form.submit();
+                    })
+
+                    // Remove item and reload on click
+                    $('.remove-item').click(function(e) {
+                        var csrfToken = "{{ csrf_token }}";
+                        // get itemid
+                        var itemId = $(this).attr('id').split('remove_')[1];
+                        // get size 
+                        var size = $(this).data('size');
+                        // Get url of item
+                        var url = `/bag/remove/${itemId}`;
+                        // the object we'll use to send this data to the server
+                        var data = {'csrfmiddlewaretoken': csrfToken, 'size': size};
+
+                        $.post(url, data)
+                        .done(function() {
+                            location.reload();
+                        });
+                    })
+                </script>
+
+- add update and delete classes to back to top link in css
 [Back to top](#walkthrough-steps)
 </details>
