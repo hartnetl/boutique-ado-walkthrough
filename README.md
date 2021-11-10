@@ -12,7 +12,7 @@
 - [Shopping bag](#shopping-bag)
 - [Add products to bag](#adding-products-to-bag)
 
-## Adding products to bag
+##
 
 <details>
 <summary></summary>
@@ -1808,7 +1808,74 @@ We'll use this functionality to display the total cost of the current shopping b
 </details>
 
 <details>
-<summary>PART 3</summary>
+<summary>PART 3 - sizes and more fine tuning</summary>
+
+<br>
+
+- Alter the products model so that has sizes is false as default
+
+           has_sizes = models.BooleanField(default=False, null=True, blank=True)
+
+    - This is fine for this project but in real world we'd need inventory of each size etc
+
+    - Make your migrations
+
+            python3 manage.py makemigrations --dry-run
+            python3 manage.py makemigrations 
+            python3 manage.py migrate --plan
+            python3 manage.py migrate
+
+- Open up a shell in your terminal to add sizes to clothes in database
+
+            python3 manage.py shell
+
+
+            from products.models import Product
+
+        separate out the kitchen, bath etc
+            kdbb = ['kitchen_dining', 'bed_bath']
+
+        Call the rest clothes - not 100% accurate since this includes newly added
+            clothes = Product.objects.exclude(category__name__in=kdbb)
+            clothes.count()
+                    out: 128
+
+            for item in clothes:
+                item.has_sizes = True
+                item.save()
+
+            Product.objects.filter(has_sizes=True)
+            Product.objects.filter(has_sizes=True).count()
+                    out: 128
+
+            exit()
+
+* Add size selector to product detail template
+
+        {% with product.has_sizes as s %}
+            {% if s %}
+                <div class="col-12">
+                    <p><strong>Size:</strong></p>
+                    <select class="form-control rounded-0 w-50" name="product_size" id='id_product_size'>
+                        <option value="xs">XS</option>
+                        <option value="s">S</option>
+                        <!-- M is the default  -->
+                        <option value="m" selected>M</option>
+                        <option value="l">L</option>
+                        <option value="xl">XL</option>
+                    </select>
+                </div>
+            {% endif %}
+        
+- Add size to product info on shopping bag page in here
+
+        <!-- product name, size and sku  -->
+        <td class="py-3">
+            <p class="my-0"><strong>{{ item.product.name }}</strong></p>
+            <p class="my-0"><strong>Size: </strong>{% if item.product.has_sizes %}{{ item.size|upper }}{% else %}N/A{% endif %}</p>
+            <p class="my-0 small text-muted">SKU: {{ item.product.sku|upper }}</p>
+        </td>
+
 
 [Back to top](#walkthrough-steps)
 </details>

@@ -59,6 +59,24 @@
                         <!-- form is a single row with two columns  -->
                         <div class="form-row">
 
+                            <!-- size box -->
+
+                            <!-- assign product has sizes to s so it can be reused  -->
+                            {% with product.has_sizes as s %}
+                            {% if s %}
+                                <div class="col-12">
+                                    <p><strong>Size:</strong></p>
+                                    <select class="form-control rounded-0 w-50" name="product_size" id='id_product_size'>
+                                        <option value="xs">XS</option>
+                                        <option value="s">S</option>
+                                        <!-- M is the default  -->
+                                        <option value="m" selected>M</option>
+                                        <option value="l">L</option>
+                                        <option value="xl">XL</option>
+                                    </select>
+                                </div>
+                            {% endif %}
+
                             <!-- col 1 = quantity input  -->
                             <div class="col-12">
                                 <p class="mt-3"><strong>Quantity:</strong></p>
@@ -70,7 +88,8 @@
                             </div>
 
                             <!-- col 2 = submit button + return shopping button -->
-                            <div class="col-12">
+                            <!-- even up margins and spacing if size box included  -->
+                            <div class="col{% if s %}-12 mt-2{% endif %}">
                                 <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 mt-5">
                                     <span class="icon">
                                         <i class="fas fa-chevron-left"></i>
@@ -82,6 +101,7 @@
                             <!-- This hidden input field uses the request.path attribute to submit a field named redirect_url which will contain the current URL.
                             By sending the current URL to the view we'll post this form to, we can redirect the user back to the same page once the product is added to their bag. -->
                             <input type="hidden" name="redirect_url" value="{{ request.path }}">
+                            {% endwith %}
                         </div>
                     </form>
                 </div>
