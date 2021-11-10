@@ -20,19 +20,37 @@ def bag_contents(request):
     bag = request.session.get('bag', {})
 
     # For each item and quantity in bag
-    for item_id, quantity in bag.items():
-        # Get the product
-        product = get_object_or_404(Product, pk=item_id)
-        # Add its quantity times the price to the total
-        total += quantity * product.price
-        # Increment the product count by the quantity
-        product_count += quantity
-        # add a dictionary to the list of bag items containing the id, quantity and the product object itself.
-        bag_items.append({
-            'item_id': item_id,
-            'quantity': quantity,
-            'product': product,
-        })
+    for item_id, item_data in bag.items():
+
+        # execute this code if no size supplied and data is just an integer (for quantity)
+        if isinstance(item_data, int):
+            # Get the product
+            product = get_object_or_404(Product, pk=item_id)
+            # Add its quantity times the price to the total
+            total += item_data * product.price
+            # Increment the product count by the quantity
+            product_count += item_data
+            # add a dictionary to the list of bag items containing the id, quantity and the product object itself.
+            bag_items.append({
+                'item_id': item_id,
+                'quantity': item_data,
+                'product': product,
+            })
+
+        # execute this one if size is supplied 
+        else:
+            product = get_object_or_404(Product, pk=item_id)
+            # iterate through inner dictionary of items by size
+            for size, quantity in item_data['items_by_size'].items():
+                # increment items accordingly
+                total += quantity * product.price
+                product_count += quantity
+                bag_items.append({
+                    'item_id': item_id,
+                    'quantity': item_data,
+                    'product': product,
+                    'size': size,
+                })
 
     if total < settings.FREE_DELIVERY_THRESHOLD:
         # Decimal is less susceptible to rounding errors than using Float. Always use this for money

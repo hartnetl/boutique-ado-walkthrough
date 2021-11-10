@@ -1881,7 +1881,94 @@ We'll use this functionality to display the total cost of the current shopping b
 </details>
 
 <details>
-<summary>PART 4</summary>
+<summary>PART 4 - tidy up wrong categories with sizes and add code to handle product sizes</summary>
+
+[ci youtube video](https://youtu.be/bQuggmgIEEs?t=7)
+
+**FIX ITEMS WITH SIZES THAT SHOULDN'T HAVE THEM**
+
+- Runserver and go through all specials and find the items that shouldn't have sizes
+- Go to each one in the admin panel and change has_sizes to no
+
+<br>
+
+**LET'S GIVE THE SHOPPING BAG SOME SIZE INFO**
+
+- First let's deal with the add_to_bag view
+
+        def add_to_bag(request, item_id):
+        """ Add a quantity of the specified product to the shopping bag """
+
+        # get the quantity from the form and convert to string
+        quantity = int(request.POST.get('quantity'))
+        redirect_url = request.POST.get('redirect_url')
+        size = None
+        if 'product_size' in request.POST:
+            size = request.POST['product_size']
+        # The session allows users to add to their bag, go back and add more, without adding more before submitting their basket for payment
+        # bag here accesses the request's session, and makes an empty dictionary if it doesn't exist
+        bag = request.session.get('bag', {})
+
+        # check if product with size is being added
+        if size:
+            if item_id in list(bag.keys()):
+                # check for item with same size and id 
+                if size in bag[item_id]['items_by_size'].keys():
+                    # if it does increase the quantity
+                    bag[item_id]['items_by_size'][size] += quantity
+                else:
+                    # if it doesn't then add it by the quantity wanted
+                    bag[item_id]['items_by_size'][size] = quantity
+            else:
+                # The below allows us to structure the bag so that we can have a
+                # single item id for each item but still track multiple sizes.
+                bag[item_id] = {'items_by_size': {size: quantity}}
+        # if no size is included
+        else:
+            if item_id in list(bag.keys()):
+                # update quantity if item is in bag
+                bag[item_id] += quantity
+            else:
+                # add item if it's not already in bag
+                bag[item_id] = quantity
+
+- Now let's handle the context.py
+
+    - Go to bagcontents
+
+            for item_id, item_data in bag.items():
+
+            # execute this code if no size supplied and data is just an integer (for quantity)
+            if isinstance(item_data, int):
+                # Get the product
+                product = get_object_or_404(Product, pk=item_id)
+                # Add its quantity times the price to the total
+                total += item_data * product.price
+                # Increment the product count by the quantity
+                product_count += item_data
+                # add a dictionary to the list of bag items containing the id, quantity and the product object itself.
+                bag_items.append({
+                    'item_id': item_id,
+                    'quantity': item_data,
+                    'product': product,
+                })
+
+            # execute this one if size is supplied 
+            else:
+                product = get_object_or_404(Product, pk=item_id)
+                # iterate through inner dictionary of items by size
+                for size, quantity in item_data['items_by_size'].items():
+                    # increment items accordingly
+                    total += quantity * product.price
+                    product_count += quantity
+                    bag_items.append({
+                        'item_id': item_id,
+                        'quantity': item_data,
+                        'product': product,
+                        'size': size,
+                    })
+
+- Add this to shopping bag template
 
 [Back to top](#walkthrough-steps)
 </details>
