@@ -132,6 +132,7 @@
             {% for message in messages %}
                 {% with message.level as level %}
                 <!-- levels set by django  -->
+                <!-- 40=error; 30=warning; 25=success  -->
                     {% if level == 40 %}
                         {% include 'includes/toasts/toast_error.html' %}
                     {% elif level == 30 %}
