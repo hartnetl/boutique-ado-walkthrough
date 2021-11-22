@@ -2175,7 +2175,7 @@ We'll use this functionality to display the total cost of the current shopping b
 <summary></summary>
 
 <details>
-<summary>Part 1 - </summary>
+<summary>Part 1 - Adjusting bag quantity </summary>
 
 Create view in bag/views.py for adjusting bag       
 
@@ -2250,7 +2250,7 @@ Give template proper action url (bag.html)
 </details>
 
 <details>
-<summary>Part 2 - </summary>
+<summary>Part 2 - Fixing remove function and creating filter to calculate subtotal </summary>
 
 Update javascript and template html for remove link to match the view
 
