@@ -2468,7 +2468,9 @@ Add css for bag notification wrapper
             overflow-y: auto;
             }
 
-            
+
+Discusses a vulnerability gitpod points out when pushes are made - I didn't get that though
+
 </details>
 
 [Back to top](#walkthrough-steps)
