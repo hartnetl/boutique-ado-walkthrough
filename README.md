@@ -11,6 +11,8 @@
 - [Product sorting](#product-sorting)
 - [Shopping bag](#shopping-bag)
 - [Add products to bag](#adding-products-to-bag)
+- [Adjusting quantity of items in bag](#adjusting-quantity-of-items-in-bag)
+- [Toasts](#toasts)
 
 ##
 
@@ -2169,10 +2171,13 @@ We'll use this functionality to display the total cost of the current shopping b
 [Back to top](#walkthrough-steps)
 </details>
 
+<hr>
+
+## Adjusting quantity of items in bag
 
 <details>
 
-<summary></summary>
+<summary>Open me here</summary>
 
 <details>
 <summary>Part 1 - Adjusting bag quantity </summary>
@@ -2285,4 +2290,112 @@ The remove function should now work
 Then add it into the price template after a pipe
 
 </details>
+
+[Back to top](#walkthrough-steps)
+
+
+</details>
+
+<hr>
+
+## Toasts
+
+<details>
+<summary>Open me</summary>
+
+<details>
+<summary>Part 1</summary>
+
+[ci video](https://youtu.be/cwhROnUBZbQ)
+
+Create a toast folder inside includes
+
+    * Create toast_error, toast_info, toast_success, toast_warning files from Bootstrap
+
+Add to the messages section of base.html
+
+        {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                    {% with message.level as level %}
+                        {% if level == 40 %}
+                            {% include 'includes/toasts/toast_error.html' %}
+                        {% elif level == 30 %}
+                            {% include 'includes/toasts/toast_warning.html' %}
+                        {% elif level == 25 %}
+                            {% include 'includes/toasts/toast_success.html' %}
+                        {% else %}
+                            {% include 'includes/toasts/toast_info.html' %}
+                        {% endif %}
+                {% endwith %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+
+Go to bag views.py
+
+* Do some imports 
+
+        from django.contrib import messages
+        from products.models import Product
+
+*  Add success message to add to bag view
+
+         messages.success(request, f'Added {product.name} to your bag')
+
+Add to postloadjs of base.html
+
+        <script type="text/javascript">
+            $('.toast').toast('show');
+        </script>
+
+Go to settings.py
+
+        MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 2</summary>
+
+[ci video](https://youtu.be/DbTOSYWMego)
+
+Add css to position toast messages
+
+        /* ------------------------------- bootstrap toasts */
+
+        .message-container {
+            position: fixed;
+            top: 72px;
+            right: 15px;
+            z-index: 99999999999;
+        }
+
+        .custom-toast {
+            overflow: visible;
+        }
+
+        .toast-capper {
+            height: 2px;
+        }
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 4</summary>
+
+</details>
+
+[Back to top](#walkthrough-steps)
 </details>
