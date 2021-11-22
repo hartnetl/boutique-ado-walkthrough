@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load bag_tools %}
 
 {% block page_header %}
 <div class="container header-container">
@@ -61,7 +62,7 @@
                         </td>
                         <!-- quantity  -->
                         <td class="py-3 w-25">
-                            <form class="form update-form" method="POST" action="">
+                            <form class="form update-form" method="POST" action="{% url 'adjust_bag' item.item_id %}">
                                 <!-- This token is needed for every posting form  -->
                                 {% csrf_token %}
                                 <div class="form-group">
@@ -94,11 +95,11 @@
                             <!-- update form  -->
                             <a class="update-link text-info"><small>Update</small></a>
                             <!-- Delete items  -->
-                            <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-size="{{ item.size }}"><small>Remove</small></a>
+                            <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-product_size="{{ item.size }}"><small>Remove</small></a>
                         </td>
                         <!-- subtotal  -->
                         <td class="py-3">
-                            <p class="my-0">${{ item.product.price }}</p>
+                            <p class="my-0">${{ item.product.price | calc_subtotal:item.quantity}}</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -160,8 +161,6 @@
 
 <script type="text/javascript">
     // Update quantity on click
-    // use the previous method to find the most recently seen update form in the 
-    // Dom. Store the form in a variable and then call the forms submit method.
     $('.update-link').click(function(e) {
         var form = $(this).prev('.update-form');
         form.submit();
@@ -170,14 +169,10 @@
     // Remove item and reload on click
     $('.remove-item').click(function(e) {
         var csrfToken = "{{ csrf_token }}";
-        // get itemid
         var itemId = $(this).attr('id').split('remove_')[1];
-        // get size 
-        var size = $(this).data('size');
-        // Get url of item
-        var url = `/bag/remove/${itemId}`;
-        // the object we'll use to send this data to the server
-        var data = {'csrfmiddlewaretoken': csrfToken, 'size': size};
+        var size = $(this).data('product_size');
+        var url = `/bag/remove/${itemId}/`;
+        var data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size};
 
         $.post(url, data)
          .done(function() {

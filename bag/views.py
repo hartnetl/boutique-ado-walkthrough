@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse, HttpResponse
 
 # Create your views here.
 
@@ -50,3 +50,63 @@ def add_to_bag(request, item_id):
 
     request.session['bag'] = bag
     return redirect(redirect_url)
+
+# CI link to this 
+# https://youtu.be/oQK_VSyyHRI?t=44 
+
+def adjust_bag(request, item_id):
+    """Adjust the quantity of the specified product to the specified amount"""
+
+    quantity = int(request.POST.get('quantity'))
+    size = None
+    if 'product_size' in request.POST:
+        size = request.POST['product_size']
+    bag = request.session.get('bag', {})
+
+    if size:
+        # If item has a size
+        if quantity > 0:
+            # If there are items, set the quantity accordingly
+            bag[item_id]['items_by_size'][size] = quantity
+        else:
+            # otherwise remove the item
+            del bag[item_id]['items_by_size'][size]
+            # And remove the item id if there are no other sizes so you don't have an empty dictionary
+            if not bag[item_id]['items_by_size']:
+                bag.pop(item_id)
+    else:
+        # Items that don't have a size
+        if quantity > 0:
+            bag[item_id] = quantity
+        else:
+            bag.pop(item_id)
+
+    request.session['bag'] = bag
+    return redirect(reverse('view_bag'))
+
+
+def remove_from_bag(request, item_id):
+    """Remove the item from the shopping bag"""
+
+    try:
+        size = None
+        if 'product_size' in request.POST:
+            size = request.POST['product_size']
+        bag = request.session.get('bag', {})
+
+        if size:
+            # remove the size they want to remove only
+            del bag[item_id]['items_by_size'][size]
+            # If there are no other sizes in the bag, delete that item id so you don't have an empty items by size dictionary.
+            if not bag[item_id]['items_by_size']:
+                bag.pop(item_id)
+        else:
+            # If there is no size, just pop it out of the bag
+            bag.pop(item_id)
+
+        request.session['bag'] = bag
+        # we want a http response because it's implemented with js
+        return HttpResponse(status=200)
+
+    except Exception as e:
+        return HttpResponse(status=500)

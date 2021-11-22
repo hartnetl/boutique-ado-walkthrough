@@ -2168,3 +2168,121 @@ We'll use this functionality to display the total cost of the current shopping b
 - add update and delete classes to back to top link in css
 [Back to top](#walkthrough-steps)
 </details>
+
+
+<details>
+
+<summary></summary>
+
+<details>
+<summary>Part 1 - </summary>
+
+Create view in bag/views.py for adjusting bag       
+
+        def adjust_bag(request, item_id):
+            """Adjust the quantity of the specified product to the specified amount"""
+
+            quantity = int(request.POST.get('quantity'))
+            size = None
+            if 'product_size' in request.POST:
+                size = request.POST['product_size']
+            bag = request.session.get('bag', {})
+
+            if size:
+                if quantity > 0:
+                    bag[item_id]['items_by_size'][size] = quantity
+                else:
+                    del bag[item_id]['items_by_size'][size]
+                    if not bag[item_id]['items_by_size']:
+                        bag.pop(item_id)
+            else:
+                if quantity > 0:
+                    bag[item_id] = quantity
+                else:
+                    bag.pop(item_id)
+
+            request.session['bag'] = bag
+            return redirect(reverse('view_bag'))
+
+        
+        Import reverse at the top
+
+And for removing items from the bag 
+
+        def remove_from_bag(request, item_id):
+            """Remove the item from the shopping bag"""
+
+            try:
+                size = None
+                if 'product_size' in request.POST:
+                    size = request.POST['product_size']
+                bag = request.session.get('bag', {})
+
+                if size:
+                    del bag[item_id]['items_by_size'][size]
+                    if not bag[item_id]['items_by_size']:
+                        bag.pop(item_id)
+                else:
+                    bag.pop(item_id)
+
+                request.session['bag'] = bag
+                return HttpResponse(status=200)
+
+            except Exception as e:
+                return HttpResponse(status=500)
+
+
+        Import httpresponse at the top
+
+Create URLS for them in bag/urls.py
+
+        
+    path('adjust/<item_id>/', views.adjust_bag, name='adjust_bag'),
+    path('remove/<item_id>/', views.remove_from_bag, name='remove_from_bag'),
+
+
+Give template proper action url (bag.html)
+
+    * for adjust 
+
+            <form class="form update-form" method="POST" action="{% url 'adjust_bag' item.item_id %}">
+
+</details>
+
+<details>
+<summary>Part 2 - </summary>
+
+Update javascript and template html for remove link to match the view
+
+    * Change 'size' to 'product_size' in bag.html 
+
+Replace the slim version of bootstrap with the full
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    This has more ajax functions such as post
+
+The remove function should now work
+
+**Note** The subtotal on the bag page doesn't update for products. Let's fix this.
+
+* Create bagtools.py in new templatetags folder
+
+        from django import template
+
+        register = template.Library()
+
+        @register.filter(name='calc_subtotal')
+        def calc_subtotal(price, quantity):
+            return price * quantity
+
+* Create empty __init__.py file so the directory is treated as a python package and makes it available for imports and to use in templates
+
+* Load the template into the top of bag.html
+
+        {% load bag_tools %}
+
+Then add it into the price template after a pipe
+
+</details>
+</details>
