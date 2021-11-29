@@ -2598,11 +2598,26 @@ Create model methods in checkout/models.py
         def __str__(self):
             return f'SKU {self.product.sku} on order {self.order.order_number}'
 
+Run dry migrations
+
+        python3 manage.py makemigrations --dry-run
+
+Run migrations
+
+        python3 manage.py makemigrations 
+
+Plan execution
+
+        python3 manage.py migrate --plan
+
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Admin, signals and forms pt 1</summary>
+
+[ci video](https://youtu.be/gm0BQEyJP_o)
+
 
 [Back to top](#walkthrough-steps)
 </details>
