@@ -2618,12 +2618,156 @@ Plan execution
 
 [ci video](https://youtu.be/gm0BQEyJP_o)
 
+* Add checkout models to checkout admin.py
+
+        from django.contrib import admin
+        from .models import Order, OrderLineItem
+
+
+        class OrderLineItemAdminInline(admin.TabularInline):
+            # Allows us to add and edit line items in admin in the order model
+            model = OrderLineItem
+            readonly_fields = ('lineitem_total',)
+
+
+        class OrderAdmin(admin.ModelAdmin):
+            # add inline to this panel
+            inlines = (OrderLineItemAdminInline,)
+
+            # Things that are calculated by our order model that can't be edited
+            readonly_fields = ('order_number', 'date',
+                            'delivery_cost', 'order_total',
+                            'grand_total',)
+
+            # this isn't fully necessary but allows us to specify order the fields in admin panel
+            fields = ('order_number', 'date', 'full_name',
+                    'email', 'phone_number', 'country',
+                    'postcode', 'town_or_city', 'street_address1',
+                    'street_address2', 'county', 'delivery_cost',
+                    'order_total', 'grand_total',)
+
+            # Which columns are displayed in the order list 
+            list_display = ('order_number', 'date', 'full_name',
+                            'order_total', 'delivery_cost',
+                            'grand_total',)
+
+            ordering = ('-date',)
+
+        admin.site.register(Order, OrderAdmin)
+
+* Check the admin panel
+
+        python3 manage.py runserver
+
+* Call methods which update totals and delivery cost of order using signals
+
+        * create signals.py in checkout 
+
+                # post here means after 
+                from django.db.models.signals import post_save, post_delete
+                from django.dispatch import receiver
+
+                from .models import OrderLineItem
+
+                @receiver(post_save, sender=OrderLineItem)
+                def update_on_save(sender, instance, created, **kwargs):
+                    """
+                    Update order total on lineitem update/create
+                    Handles signals from the post save event
+                    Here: sender=orderlineitem, instance of the model that sent it, a boolean
+                    by django saying if this is a new instance or one being updated and any 
+                    keyword arguements
+                    Our code inside the method is really simple.
+                    We just have to access instance.order - which refers to the order this 
+                    specific line item is related to - and call the update_total method on it.
+                    To execute this function anytime the post_save signal is sent use the 
+                    receiver decorator, telling it we're receiving post saved signals from the
+                    OrderLineItem model.
+                    """
+                    instance.order.update_total()
+
+                @receiver(post_delete, sender=OrderLineItem)
+                def update_on_save(sender, instance, **kwargs):
+                    """
+                    Update order total on lineitem delete
+                    Same same as above, but different
+                    * Note: There's an error here that will be addressed later *
+                    """
+                    instance.order.update_total()
+
+* Let django know there's a new signals module with listeners
+
+    * checkout apps.py
+
+            class CheckoutConfig(AppConfig):
+            name = 'checkout'
+
+            def ready(self):
+                import checkout.signals
+
+    With that done, every time a line item is saved or deleted.
+    Our custom update total model method will be called.
+    Updating the order totals automatically.
 
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Admin, signals and forms pt 2</summary>
+
+[ci video](https://youtu.be/0cGRqIHvSf8)
+
+* Create checkout form
+
+    * forms.py in checkout
+
+            from django import forms
+            from .models import Order
+
+
+            class OrderForm(forms.ModelForm):
+                class Meta:
+                    model = Order
+                    fields = ('full_name', 'email', 'phone_number',
+                            'street_address1', 'street_address2',
+                            'town_or_city', 'postcode', 'country',
+                            'county',)
+
+                def __init__(self, *args, **kwargs):
+                    """
+                    Add placeholders and classes, remove auto-generated
+                    labels and set autofocus on first field
+                    """
+                    # call default method to set up form as it would be by default
+                    super().__init__(*args, **kwargs)
+                    # Add placeholders to boxes
+                    placeholders = {
+                        'full_name': 'Full Name',
+                        'email': 'Email Address',
+                        'phone_number': 'Phone Number',
+                        'country': 'Country',
+                        'postcode': 'Postal Code',
+                        'town_or_city': 'Town or City',
+                        'street_address1': 'Street Address 1',
+                        'street_address2': 'Street Address 2',
+                        'county': 'County',
+                    }
+
+                    # Set cursor to start in full name when page loads 
+                    self.fields['full_name'].widget.attrs['autofocus'] = True
+                    # Go through the list
+                    for field in self.fields:
+                        # If the field is required, add a star 
+                        if self.fields[field].required:
+                            placeholder = f'{placeholders[field]} *'
+                        else:
+                            placeholder = placeholders[field]
+                        # set placeholder values as per above
+                        self.fields[field].widget.attrs['placeholder'] = placeholder
+                        # Add the css class we haven't created yet
+                        self.fields[field].widget.attrs['class'] = 'stripe-style-input'
+                        # Remove labels
+                        self.fields[field].label = False
 
 [Back to top](#walkthrough-steps)
 </details>
