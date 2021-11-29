@@ -13,6 +13,7 @@
 - [Add products to bag](#adding-products-to-bag)
 - [Adjusting quantity of items in bag](#adjusting-quantity-of-items-in-bag)
 - [Toasts](#toasts)
+- [Checkout app](#checkout-app)
 
 ##
 
@@ -2470,6 +2471,64 @@ Add css for bag notification wrapper
 
 
 Discusses a vulnerability gitpod points out when pushes are made - I didn't get that though
+
+</details>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+## CHECKOUT APP
+<details>
+<summary>Open</summary>
+
+<details>
+<summary>Models pt 1</summary>
+
+Create new app for checkout
+
+        python3 manage.py startapp checkout
+
+* Add it to settings.py
+
+Create models for checkout
+
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Models pt 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Admin, signals and forms pt 1</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Admin, signals and forms pt 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Templates and views pt 1</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Templates and views pt 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Templates and views pt 3</summary>
 
 </details>
 
