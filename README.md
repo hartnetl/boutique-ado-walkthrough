@@ -3158,12 +3158,120 @@ Add Stripe
 <details>
 <summary>Part 3</summary>
 
+[ci video](https://youtu.be/MOYj1OGi76k)
+
+Give card element some functionality
+
+* Add error message for card details 
+
+        // Handle realtime validation errors on the card element
+        card.addEventListener('change', function (event) {
+            // add listener to card element and check for errors everytime it changes 
+            var errorDiv = document.getElementById('card-errors');
+            if (event.error) {
+                // If there are, display them in the card errors div 
+                var html = `
+                    <span class="icon" role="alert">
+                        <i class="fas fa-times"></i>
+                    </span>
+                    <span>${event.error.message}</span>
+                `;
+                $(errorDiv).html(html);
+            } else {
+                // otherwise it will be blank 
+                errorDiv.textContent = '';
+            }
+        });
+**Note:** How stripe works [video moment](https://youtu.be/MOYj1OGi76k?t=128)
+
+    1. Checkout view creates stripe payment intent
+    2. Stripe returns client_secret, which we return to the template
+    3. Use client_secret in the template to call confirmCardPaymeny() and verify the card 
+
+We need to calculate the bag total for this
+
+Checkout/views.py 
+
+* import bag contents function
+
+        from bag.contexts import bag_contents
+
+* Update checkout function on that page
+
+        stripe_public_key = settings.STRIPE_PUBLIC_KEY
+        stripe_secret_key = settings.STRIPE_SECRET_KEY
+
+        bag = request.session.get('bag', {})
+        # if bag is empty
+        if not bag:
+            messages.error(request, "There's nothing in your bag at the moment")
+            # redirect back to the checkout page 
+            return redirect(reverse('products'))
+
+        current_bag = bag_contents(request)
+        total = current_bag['grand_total']
+        stripe_total = round(total * 100)
+        stripe.api_key = stripe_secret_key
+        intent = stripe.PaymentIntent.create(
+            amount=stripe_total,
+            currency=settings.STRIPE_CURRENCY,
+        )
+
+* Install stripe 
+
+    pip3 install stripe
+
+* Import it to the top of views.py
+
+    import stripe
+
+* Import settings 
+
+    from django.conf import settings
+
+* Go to settings.py
+
+    # Stripe
+    FREE_DELIVERY_THRESHOLD = 50
+    STANDARD_DELIVERY_PERCENTAGE = 10
+    STRIPE_CURRENCY = 'usd'
+    STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
+    STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+
+* Set the public and secret keys in gitpod terminal, copying values from stripe dashboard
+(There are definitely other ways to set environment variables)
+
+        export STRIPE_PUBLIC_KEY=pk_test_51K1HPjFEToCWPRVclerd629oZ2GPMA7MZ35nvCP1MFMF3TOaGag82Zcnss3Yks7VrpnTs54aTBofqbdW71E4mX19009CY8EerJ
+
+        export STRIPE_SECRET_KEY=copy_key_here
+
+    NOTE: These will have to be exported each time you start workspace unless you save them in gitpod workspace variable
+
+            * Go to gitpod dashboard
+            * Settings
+            * Variables
+            * Enter the values
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
 <summary>Part 4</summary>
+
+[ci video](https://youtu.be/rp_ERUy7nb4)
+
+Create payment intent in views.py
+
+        stripe_public_key = settings.STRIPE_PUBLIC_KEY
+        stripe_secret_key = settings.STRIPE_SECRET_KEY
+
+        stripe.api_key = stripe_secret_key
+        intent = stripe.PaymentIntent.create(
+            amount=stripe_total,
+            currency=settings.STRIPE_CURRENCY,
+        )
 
 [Back to top](#walkthrough-steps)
 </details>
