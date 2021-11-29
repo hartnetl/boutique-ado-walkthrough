@@ -3430,7 +3430,14 @@ go to checkout js and add code to handle form submission
                 });
             });
 
+You should now be able to successfully test your checkout form (using 4242)
 
+Now go back to stripe dashboard
+
+* developers
+* events
+    * Your payment should be visible
+    
 [Back to top](#walkthrough-steps)
 </details>
 
