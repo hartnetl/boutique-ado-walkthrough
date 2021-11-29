@@ -6,10 +6,10 @@
 */
 
 // get stripe key, removing the quotation mark characters
-var stripe_public_key = $('#id_stripe_public_key').text().slice(1, -1);
-var client_secret = $('#id_client_secret').text().slice(1, -1);
+var stripePublicKey = $('#id_stripe_public_key').text().slice(1, -1);
+var clientSecret = $('#id_client_secret').text().slice(1, -1);
 // create stripe variable 
-var stripe = Stripe(stripe_public_key);
+var stripe = Stripe(stripePublicKey);
 // Use stripe variable to get stripe elements 
 var elements = stripe.elements();
 // copy style from (https://stripe.com/docs/js/payment_request/events/on_shipping_option_change#:~:text=94941%27%2C%0A%20%20country%3A%20%27US%27%2C%0A%7D-,The%20Style%20object,-Elements%20are%20styled)
@@ -57,14 +57,19 @@ card.addEventListener('change', function (event) {
 var form = document.getElementById('payment-form');
 
 form.addEventListener('submit', function(ev) {
+    // prevent the default action, which here is Post 
     ev.preventDefault();
+    // disable card element and submit button to prevent multiple submissions 
     card.update({ 'disabled': true});
     $('#submit-button').attr('disabled', true);
+    // Call confirm card payment method 
     stripe.confirmCardPayment(clientSecret, {
         payment_method: {
             card: card,
         }
+    // execute this function on the result of confirmCardPayment 
     }).then(function(result) {
+        // If there's an error put it into the card error div 
         if (result.error) {
             var errorDiv = document.getElementById('card-errors');
             var html = `
@@ -73,9 +78,11 @@ form.addEventListener('submit', function(ev) {
                 </span>
                 <span>${result.error.message}</span>`;
             $(errorDiv).html(html);
+            // Enable card element and submit button to allow users to fix error 
             card.update({ 'disabled': false});
             $('#submit-button').attr('disabled', false);
         } else {
+            // If the status of payment intent comes back as succeeded, submit the fprm 
             if (result.paymentIntent.status === 'succeeded') {
                 form.submit();
             }

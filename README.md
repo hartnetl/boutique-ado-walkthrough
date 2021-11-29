@@ -3023,7 +3023,7 @@ Add checkout url to checkout button on bag.html
 ## STRIPE PAYMENTS
 
 <details>
-<summary>Part 1</summary>
+<summary>Part 1 - signup to stripe</summary>
 
 [ci video](https://youtu.be/or9zOswvISY)
 
@@ -3049,7 +3049,7 @@ Add Stripe
 </details>
 
 <details>
-<summary>Part 2</summary>
+<summary>Part 2 - add stripe js</summary>
 
 [video link](https://youtu.be/eUcMh5s_27I)
 
@@ -3156,7 +3156,7 @@ Add Stripe
 
 
 <details>
-<summary>Part 3</summary>
+<summary>Part 3 - install stripe and environment variables </summary>
 
 [ci video](https://youtu.be/MOYj1OGi76k)
 
@@ -3251,6 +3251,7 @@ Checkout/views.py
             * Settings
             * Variables
             * Enter the values
+            * Stop and reopen the workspace
 
 
 [Back to top](#walkthrough-steps)
@@ -3258,7 +3259,7 @@ Checkout/views.py
 
 
 <details>
-<summary>Part 4</summary>
+<summary>Part 4 - get view to return proper secrets </summary>
 
 [ci video](https://youtu.be/rp_ERUy7nb4)
 
@@ -3273,12 +3274,162 @@ Create payment intent in views.py
             currency=settings.STRIPE_CURRENCY,
         )
 
+If you print the intent and refresh the checkout page, this is what shows up in the terminal when the item is 411.98 for two items
+
+        {
+            "amount": 41198,
+            "amount_capturable": 0,
+            "amount_received": 0,
+            "application": null,
+            "application_fee_amount": null,
+            "automatic_payment_methods": null,
+            "canceled_at": null,
+            "cancellation_reason": null,
+            "capture_method": "automatic",
+            "charges": {
+                "data": [],
+                "has_more": false,
+                "object": "list",
+                "total_count": 0,
+                "url": "/v1/charges?payment_intent=pi_3K1J1SFEToCWPRVc1QdY1xta"
+            },
+            "client_secret": "pi_3K1J1SFEToCWPRVc1QdY1xta_secret_g6mQs0Fq7XhhOJRWXwsCmC9yg",
+            "confirmation_method": "automatic",
+            "created": 1638227554,
+            "currency": "usd",
+            "customer": null,
+            "description": null,
+            "id": "pi_3K1J1SFEToCWPRVc1QdY1xta",
+            "invoice": null,
+            "last_payment_error": null,
+            "livemode": false,
+            "metadata": {},
+            "next_action": null,
+            "object": "payment_intent",
+            "on_behalf_of": null,
+            "payment_method": null,
+            "payment_method_options": {
+                "card": {
+                "installments": null,
+                "network": null,
+                "request_three_d_secure": "automatic"
+                }
+            },
+            "payment_method_types": [
+                "card"
+            ],
+            "receipt_email": null,
+            "review": null,
+            "setup_future_usage": null,
+            "shipping": null,
+            "source": null,
+            "statement_descriptor": null,
+            "statement_descriptor_suffix": null,
+            "status": "requires_payment_method",
+            "transfer_data": null,
+            "transfer_group": null
+            }
+
+* Update your views.py so it looks like this
+
+    <details>
+    <summary>Reveal views.py</summary>
+    
+        from django.shortcuts import render, redirect, reverse
+        from django.contrib import messages
+        from django.conf import settings
+
+        from .forms import OrderForm
+        from bag.contexts import bag_contents
+
+        import stripe
+
+
+        def checkout(request):
+            # the payment intent 
+            stripe_public_key = settings.STRIPE_PUBLIC_KEY
+            stripe_secret_key = settings.STRIPE_SECRET_KEY
+
+            bag = request.session.get('bag', {})
+            # if bag is empty
+            if not bag:
+                messages.error(request, "There's nothing in your bag at the moment")
+                # redirect back to the checkout page 
+                return redirect(reverse('products'))
+
+            current_bag = bag_contents(request)
+            total = current_bag['grand_total']
+            stripe_total = round(total * 100)
+            # set secret key on stripe 
+            stripe.api_key = stripe_secret_key
+            intent = stripe.PaymentIntent.create(
+                amount=stripe_total,
+                currency=settings.STRIPE_CURRENCY,
+            )
+
+
+            # create empty instance of order form 
+            order_form = OrderForm()
+
+            # message incase you forget to set secret key 
+            if not stripe_public_key:
+                messages.warning(request, 'Stripe public key is missing. \
+                    Did you forget to set it in your environment?')
+
+
+            template = 'checkout/checkout.html'
+            context = {
+                'order_form': order_form,
+                'stripe_public_key': stripe_public_key,
+                'client_secret': intent.client_secret,
+            }
+
+            return render(request, template, context)
+    
+    </details>
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
-<summary>Part 5</summary>
+<summary>Part 5 - add listener to payment forms submit event</summary>
+
+[ci video](https://youtu.be/YtVMZItdI0E)
+
+[the modern link](https://stripe.com/docs/payments/accept-a-payment?platform=web&ui=elements#web-submit-payment)
+
+go to checkout js and add code to handle form submission
+            
+            // Handle form submit
+            var form = document.getElementById('payment-form');
+
+            form.addEventListener('submit', function(ev) {
+                ev.preventDefault();
+                card.update({ 'disabled': true});
+                $('#submit-button').attr('disabled', true);
+                stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: card,
+                    }
+                }).then(function(result) {
+                    if (result.error) {
+                        var errorDiv = document.getElementById('card-errors');
+                        var html = `
+                            <span class="icon" role="alert">
+                            <i class="fas fa-times"></i>
+                            </span>
+                            <span>${result.error.message}</span>`;
+                        $(errorDiv).html(html);
+                        card.update({ 'disabled': false});
+                        $('#submit-button').attr('disabled', false);
+                    } else {
+                        if (result.paymentIntent.status === 'succeeded') {
+                            form.submit();
+                        }
+                    }
+                });
+            });
+
 
 [Back to top](#walkthrough-steps)
 </details>
