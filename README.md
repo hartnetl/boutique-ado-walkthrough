@@ -14,6 +14,8 @@
 - [Adjusting quantity of items in bag](#adjusting-quantity-of-items-in-bag)
 - [Toasts](#toasts)
 - [Checkout app](#checkout-app)
+- [Stripe payments](#stripe-payments)
+
 
 ##
 
@@ -2477,9 +2479,9 @@ Discusses a vulnerability gitpod points out when pushes are made - I didn't get 
 [Back to top](#walkthrough-steps)
 </details>
 
+<hr>
+
 ## CHECKOUT APP
-<details>
-<summary>Open</summary>
 
 <details>
 <summary>Models pt 1</summary>
@@ -3012,9 +3014,250 @@ Add checkout url to checkout button on bag.html
 
         <a href="{% url 'checkout' %}" class="btn btn-black rounded-0 btn-lg">
 
-
+[Back to top](#walkthrough-steps)
 
 </details>
+
+<hr>
+
+## STRIPE PAYMENTS
+
+<details>
+<summary>Part 1</summary>
+
+[ci video](https://youtu.be/or9zOswvISY)
+
+Add css to checkout.css
+
+        .fieldset-label {
+            position: relative;
+            right: .5rem;
+        }
+
+        #payment-form .form-control,
+        #card-element {
+            color: #000;
+            border: 1px solid #000;
+        }
+
+Add Stripe 
+
+    * Go to stripe.com and sign up/in
+
 
 [Back to top](#walkthrough-steps)
 </details>
+
+<details>
+<summary>Part 2</summary>
+
+[video link](https://youtu.be/eUcMh5s_27I)
+
+[Accepting a payment with stripe](https://stripe.com/docs/payments/accept-a-payment#web-collect-card-details)
+
+* Get the js script link from stripe
+
+        <script src="https://js.stripe.com/v3/"></script>
+
+[link for source](https://stripe.com/docs/js/including#:~:text=no%20code%20required.-,Including%20Stripe.js,-Include%20the%20Stripe)
+
+* Add it to core js of base.html
+
+* Add postload js to bottom of checkout.html
+
+        {% block postloadjs %}
+            {{ block.super }}
+            {{ stripe_public_key|json_script:"id_stripe_public_key" }}
+            {{ client_secret|json_script:"id_client_secret" }}
+            <script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
+        {% endblock %}
+
+* Get the publishable key from the stripe dashboard
+
+        pk_test_51K1HPjFEToCWPRVclerd629oZ2GPMA7MZ35nvCP1MFMF3TOaGag82Zcnss3Yks7VrpnTs54aTBofqbdW71E4mX19009CY8EerJ
+
+* Go to checkout/views.py
+    * Add it to context 
+
+        'stripe_public_key': 'pk_test_51K1HPjFEToCWPRVclerd629oZ2GPMA7MZ35nvCP1MFMF3TOaGag82Zcnss3Yks7VrpnTs54aTBofqbdW71E4mX19009CY8EerJ'
+
+    * Add test value for client secret 
+
+        'client_secret': 'test client secret',
+
+* Go to your checkout preview and make sure these two values are at the bottom if you inspect the page
+
+* Create stripe_elements.js beside checkout/css
+
+    [style](https://stripe.com/docs/js/payment_request/events/on_shipping_option_change#:~:text=94941%27%2C%0A%20%20country%3A%20%27US%27%2C%0A%7D-,The%20Style%20object,-Elements%20are%20styled)
+
+
+    // get stripe key, removing the quotation mark characters
+    var stripe_public_key = $('#id_stripe_public_key').text().slice(1, -1);
+    var client_secret = $('#id_client_secret').text().slice(1, -1);
+    // create stripe variable 
+    var stripe = Stripe(stripe_public_key);
+    // Use stripe variable to get stripe elements 
+    var elements = stripe.elements();
+    // copy style from (https://stripe.com/docs/js/payment_request/events/on_shipping_option_change#:~:text=94941%27%2C%0A%20%20country%3A%20%27US%27%2C%0A%7D-,The%20Style%20object,-Elements%20are%20styled)
+    var style = {
+        base: {
+            color: '#000',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#dc3545',
+            iconColor: '#dc3545'
+        }
+    };
+    // use elements to create card with style from above
+    var card = elements.create('card', {style: style});
+    // mount the card to the div we made previously 
+    card.mount('#card-element');
+
+
+
+* Add stripe css from documentation, with our custom stripe-style-input class name from earlier
+
+        .StripeElement,
+        .stripe-style-input {
+        box-sizing: border-box;
+        height: 40px;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        border-radius: 0px;
+        background-color: white;
+        box-shadow: 0 1px 3px 0 #e6ebf1;
+        -webkit-transition: box-shadow 150ms ease;
+        transition: box-shadow 150ms ease;
+        }
+
+        .StripeElement--focus,
+        .stripe-style-input:focus,
+        .stripe-style-input:active {
+        box-shadow: 0 1px 3px 0 #cfd7df;
+        }
+
+        .StripeElement--webkit-autofill {
+        background-color: #fefde5 !important;
+        }
+
+        .stripe-style-input::placeholder {
+            color: #aab7c4;
+        }
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 4</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 5</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 6</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 7</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 8</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 9</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 10</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 11</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 12</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 13</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 14</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 15</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 16</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 17</summary>
+
+[Back to top](#walkthrough-steps)
+
+</details>
+
+<hr>
