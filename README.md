@@ -3447,6 +3447,8 @@ Now go back to stripe dashboard
 
 [ci video](https://youtu.be/CZnAfbguNys)
 
+[test card numbers](https://stripe.com/docs/testing)
+
 * Update the checkout view to handle the posting for the form 
 
 <details>
@@ -3669,27 +3671,302 @@ Now go back to stripe dashboard
             self.order_total = self.lineitems.aggregate(Sum('lineitem_total'))['lineitem_total__sum'] or 0
 
 
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 8 - add order summary </summary>
+
+[ci video](https://youtu.be/KfA1GSBfozQ)
+
+Checkout_success.html
+
+             <!-- order summary  -->
+            <div class="row">
+                <div class="col-12 col-lg-7">
+                    <!-- border for section  -->
+                    <div class="order-confirmation-wrapper p-2 border">
+
+                    <!-- order info  -->
+
+                        <div class="row">
+                            <div class="col">
+                                <small class="text-muted">Order Info:</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- 1 row with 2 columns taking up 1/3 and 2/3 respectively -->
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Order Number</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.order_number }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Order Date</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.date }}</p>
+                            </div>
+                        </div>
+
+                    <!-- order details  -->
+
+                        <div class="row">
+                            <div class="col">
+                                <small class="text-muted">Order Details:</small>
+                            </div>
+                        </div>
+
+                        <!-- We need a for loop to make a new line for each item in the order  -->
+                        <!-- lineitems here comes from the related_name attribute on the order field od the orderlineitem model  -->
+                        {% for item in order.lineitems.all %}
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="small mb-0 text-black font-weight-bold">
+                                    {{ item.product.name }}{% if item.product_size %} - Size {{ item.product.size|upper }}{% endif %}
+                                </p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="small mb-0">{{ item.quantity }} @ ${{ item.product.price }} each</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    <!-- delivering to  -->
+
+                        <div class="row">
+                            <div class="col">
+                                <small class="text-muted">Delivering To:</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Full Name</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.full_name }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Address 1</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.street_address1 }}</p>
+                            </div>
+                        </div>
+
+                        {% if order.street_address2 %}
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Address 2</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.street_address2 }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if order.county %}
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">County</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.county }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Town or City</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.town_or_city }}</p>
+                            </div>
+                        </div>
+
+                        {% if order.postcode %}
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Postal Code</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.postcode }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Country</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.country }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Phone Number</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.phone_number }}</p>
+                            </div>
+                        </div>
+
+                    <!-- billing info  -->
+                        <div class="row">
+                            <div class="col">
+                                <small class="text-muted">Billing Info:</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Order Total</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.order_total }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Delivery</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.delivery_cost }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <p class="mb-0 text-black font-weight-bold">Grand Total</p>
+                            </div>
+                            <div class="col-12 col-md-8 text-md-right">
+                                <p class="mb-0">{{ order.grand_total }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
-<summary>Part 8</summary>
+<summary>Part 9 - add page loading </summary>
+
+[ci video](https://youtu.be/kaSEjVz-8Pc)
+
+
+checkout success.html
+
+    * wrap optional form fields in if statements so they're only displayed if required  
+        - street address 2  
+        - county  
+        - postcode  
+
+Give your checkout success a whirl to see if it works  
+
+Checkout.html
+
+    * Add spinning overlay to  show page is loading 
+
+                <div id="loading-overlay">
+                    <h1 class="text-light logo-font loading-spinner">
+                        <span class="icon">
+                            <i class="fas fa-3x fa-sync-alt fa-spin"></i>
+                        </span>
+                    </h1>
+                </div>
+
+checkout.css
+
+    * Add spinning css 
+
+                #loading-overlay {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(23, 162, 184, .85);
+                    z-index: 9999;
+                }
+
+                .loading-spinner {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0;
+                    height: 100%;
+                }
+
+
+stripe elements.js
+
+    * Use js to trigger overlay
+
+                    $('#payment-form').fadeToggle(100);
+                    $('#loading-overlay').fadeToggle(100);
+
+Test it again and your page loader should appear when you submit form
+
+    * 4000 0027 6000 3184 
+    * This number can be used as a test with authentication
 
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
-<summary>Part 9</summary>
+<summary>Part 10 - webhooks</summary>
 
-[Back to top](#walkthrough-steps)
-</details>
+[ci video](https://youtu.be/AU0F2wnrbEs)
+
+At this point, there is a risk that if the user closes the browser before the form is submitted that payment is taken but no order is placed  
+We need to build in some redundancy  
+Each time an event occurs on stripe such as a payment intent being created, a payment being completed and so on, stripe sends out what's called a webhook we can listen for  
+Webhooks are like the signals django sends each time a model is saved or deleted, except that they're sent securely from stripe to a URL we specify.
+
+Create webhook handler
+
+* create webhook_handler.py in checkout
+
+                from django.http import HttpResponse
+
+                class StripeWH_Handler:
+                    """Handle Stripe webhooks"""
+
+                    # The init method of the class is a setup method that's called every time
+                    # an instance of the class is created. Here we're going to use it to assign
+                    # the request as an attribute of the class
+                    def __init__(self, request):
+                        self.request = request
+
+                    def handle_event(self, event):
+                        """
+                        Handle a generic/unknown/unexpected webhook event
+                        """
+                        return HttpResponse(
+                            content=f'Webhook received: {event["type"]}',
+                            status=200)
 
 
-<details>
-<summary>Part 10</summary>
 
 [Back to top](#walkthrough-steps)
 </details>
