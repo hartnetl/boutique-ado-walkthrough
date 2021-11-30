@@ -29,7 +29,9 @@ var style = {
     }
 };
 // use elements to create card with style from above
-var card = elements.create('card', {style: style});
+var card = elements.create('card', {
+    style: style
+});
 // mount the card to the div we made previously 
 card.mount('#card-element');
 
@@ -56,11 +58,13 @@ card.addEventListener('change', function (event) {
 // Handle form submit
 var form = document.getElementById('payment-form');
 
-form.addEventListener('submit', function(ev) {
+form.addEventListener('submit', function (ev) {
     // prevent the default action, which here is Post 
     ev.preventDefault();
     // disable card element and submit button to prevent multiple submissions 
-    card.update({ 'disabled': true});
+    card.update({
+        'disabled': true
+    });
     // overlay loading 
     $('#submit-button').attr('disabled', true);
     $('#payment-form').fadeToggle(100);
@@ -69,9 +73,33 @@ form.addEventListener('submit', function(ev) {
     stripe.confirmCardPayment(clientSecret, {
         payment_method: {
             card: card,
-        }
-    // execute this function on the result of confirmCardPayment 
-    }).then(function(result) {
+            billing_details: {
+                name: $.trim(form.full_name.value),
+                phone: $.trim(form.phone_number.value),
+                email: $.trim(form.email.value),
+                address: {
+                    line1: $.trim(form.street_address1.value),
+                    line2: $.trim(form.street_address2.value),
+                    city: $.trim(form.town_or_city.value),
+                    country: $.trim(form.country.value),
+                    state: $.trim(form.county.value),
+                }
+            }
+        },
+        shipping: {
+            name: $.trim(form.full_name.value),
+            phone: $.trim(form.phone_number.value),
+            address: {
+                line1: $.trim(form.street_address1.value),
+                line2: $.trim(form.street_address2.value),
+                city: $.trim(form.town_or_city.value),
+                country: $.trim(form.country.value),
+                postal_code: $.trim(form.postcode.value),
+                state: $.trim(form.county.value),
+            }
+        },
+        // execute this function on the result of confirmCardPayment 
+    }).then(function (result) {
         // If there's an error put it into the card error div 
         if (result.error) {
             var errorDiv = document.getElementById('card-errors');
@@ -85,7 +113,9 @@ form.addEventListener('submit', function(ev) {
             $('#payment-form').fadeToggle(100);
             $('#loading-overlay').fadeToggle(100);
             // Enable card element and submit button to allow users to fix error 
-            card.update({ 'disabled': false});
+            card.update({
+                'disabled': false
+            });
             $('#submit-button').attr('disabled', false);
         } else {
             // If the status of payment intent comes back as succeeded, submit the fprm 

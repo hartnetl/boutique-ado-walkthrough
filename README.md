@@ -3981,7 +3981,7 @@ If this affects you, please select just two webhooks from the list: payment_inte
 <br>
 
 <details>
-<summary>Part 11</summary>
+<summary>Part 11 - Creat success/fail webhook handlers</summary>
 
 [video](https://youtu.be/HsOrCqVovmk)
 
@@ -4054,7 +4054,39 @@ recent webhook documentation [here](https://stripe.com/docs/payments/handling-pa
                     except Exception as e:
                         return HttpResponse(content=e, status=400)
 
-                    # Set up a webhook handler
+
+Settings.py - create stripe webhook environment variable
+
+        STRIPE_WH_SECRET = os.getenv('STRIPE_WH_SECRET', '')
+
+Run the server  
+Copy the url and go to the stripe dashboard  
+* Developers
+* Webhooks
+* Add endpoint
+    * Copy in url, adding 'checkout/wh/ to the end of it
+    * Select all events to be received 
+    * click add endpoint
+    * reveal and copy the signing secret
+    * Export it
+        * export STRIPE_WH_SECRET = copy_in_notes
+    * Add to gitpod variables and restart workspace
+* Send test webhook and it should work  
+
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+
+<details>
+<summary>Part 12 - more event handlers </summary>
+
+[ci video](https://youtu.be/OIueBHJcPM8)
+
+Add more event handlers 
+
+        # Set up a webhook handler
                     handler = StripeWH_Handler(request)
 
                     # Map webhook events to relevant handler functions
@@ -4074,26 +4106,75 @@ recent webhook documentation [here](https://stripe.com/docs/payments/handling-pa
                     response = event_handler(event)
                     return response
 
-Settings.py - create stripe webhook environment variable
-
-        STRIPE_WH_SECRET = os.getenv('STRIPE_WH_SECRET', '')
-
-
-
 
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
-<summary>Part 12</summary>
+<summary>Part 13 - create database objects in database objects</summary>
 
-[Back to top](#walkthrough-steps)
-</details>
+[ci video](https://youtu.be/h0_abBkUPAw)
+
+*Before we get to the webhook code we need to make a small addition to the stripe elements javascript. Basically since the payment intent.succeeded webhook will be coming from stripe and not from our own code into the webhook handler, we need to somehow stuff the form data into the payment intent object so we can retrieve it once we receive the webhook. Most of this we can do by simply adding the form data to the confirmed card payment method.*
+
+Add shipping and billing details to handle form submit on js 
+
+        payment_method: {
+                        card: card,
+                        billing_details: {
+                            name: $.trim(form.full_name.value),
+                            phone: $.trim(form.phone_number.value),
+                            email: $.trim(form.email.value),
+                            address: {
+                                line1: $.trim(form.street_address1.value),
+                                line2: $.trim(form.street_address2.value),
+                                city: $.trim(form.town_or_city.value),
+                                country: $.trim(form.country.value),
+                                state: $.trim(form.county.value),
+                            }
+                        }
+                    },
+                    shipping: {
+                        name: $.trim(form.full_name.value),
+                        phone: $.trim(form.phone_number.value),
+                        address: {
+                            line1: $.trim(form.street_address1.value),
+                            line2: $.trim(form.street_address2.value),
+                            city: $.trim(form.town_or_city.value),
+                            country: $.trim(form.country.value),
+                            postal_code: $.trim(form.postcode.value),
+                            state: $.trim(form.county.value),
+                        }
+                    },
+
+Write a view to handle if customer wants their details saved in checkout/views.py
+
+        @require_POST
+        def cache_checkout_data(request):
+            try:
+                pid = request.POST.get('client_secret').split('_secret')[0]
+                stripe.api_key = settings.STRIPE_SECRET_KEY
+                stripe.PaymentIntent.modify(pid, metadata={
+                    'bag': json.dumps(request.session.get('bag', {})),
+                    'save_info': request.POST.get('save_info'),
+                    'username': request.user,
+                })
+                return HttpResponse(status=200)
+            except Exception as e:
+                messages.error(request, 'Sorry, your payment cannot be \
+                    processed right now. Please try again later.')
+                return HttpResponse(content=e, status=400)
+
+    Do your imports at the top
+
+            HttpResponse
+            from django.views.decorators.http import require_POST
+
+        
 
 
-<details>
-<summary>Part 13</summary>
+
 
 [Back to top](#walkthrough-steps)
 </details>
