@@ -59,7 +59,15 @@ def checkout(request):
         order_form = OrderForm(form_data)
         # If form is valid, save the order 
         if order_form.is_valid():
-            order = order_form.save()
+            # commit stops multiple saves
+            order = order_form.save(commit=False)
+            # get payment intent id
+            pid = request.POST.get('client_secret').split('_secret')[0]
+            # we've already got the shopping bag here so adding that to the model is simple.
+            # we'll just dump it to a JSON string, set it on the order, and then we can save the order.
+            order.stripe_pid = pid
+            order.original_bag = json.dumps(bag)
+            order.save()
             # iterate through each bag item to create each line item 
             for item_id, item_data in bag.items():
                 try:

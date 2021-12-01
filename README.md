@@ -4186,7 +4186,11 @@ Write a view to handle if customer wants their details saved in checkout/views.p
 
 
 <details>
-<summary>Part 14</summary>
+<summary>Part 14 - connect js to view with webhook handler</summary>
+
+*Add checkout form data caching in paymennt intent*
+
+*In this video, you'll learn how to pass customer information through a stripe payment intent as metadata. There are many reasons developers may want to do this but in our case, we're doing it to ensure that all orders are entered into our database even in the event of a user error during the checkout process.*
 
 [ci video](https://youtu.be/dewcliXUY8Y)
 
@@ -4264,7 +4268,128 @@ Run your server and submit an order to see if it all works
 
 
 <details>
-<summary>Part 15</summary>
+<summary>Part 15 - checking if order exists and responding appropriately</summary>
+
+[ci video](https://youtu.be/TWeK8klQq00)
+
+*In this video, we'll finalize the code from the previous video and test it out. In the payment intent succeeded webhook handler we've already got the payment intent which has all our customers information in it. All we need to do is use it to create an order just like we did with the form. The only reason we're doing this is in case the form isn't submitted for some reason like if the user closes the page on the loading screen.*
+
+Webhook_handler.py
+
+         def handle_payment_intent_succeeded(self, event):
+        """
+        Handle the payment_intent.succeeded webhook from Stripe
+        """
+        intent = event.data.object
+        print(intent)
+        # get payment id
+        pid = intent.id
+        # get shopping bag
+        bag = intent.metadata.bag
+        # get save preference
+        save_info = intent.metadata.save_info
+
+        # store all of these details 
+        billing_details = intent.charges.data[0].billing_details
+        shipping_details = intent.shipping
+        grand_total = round(intent.charges.data[0].amount / 100, 2)
+
+        # Clean data in the shipping details:
+        # replace any empty strings in the shipping details with none since stripe will store them as blank strings which is not the same as the null value we want in the database.
+        for field, value in shipping_details.address.items():
+            if value == "":
+                shipping_details.address[field] = None
+
+        # Explanation of what's happening at checkout process https://youtu.be/TWeK8klQq00?t=131
+
+        # check if order exists, and if it does return a response, if it doesn't then create it 
+        # Check if order exists
+        order_exists = False
+        attempt = 1
+        while attempt <= 5:
+            try:
+                # use info to find the order 
+                order = Order.objects.get(
+                    # iexact finds a case insensitive exact match 
+                    full_name__iexact=shipping_details.name,
+                    email__iexact=billing_details.email,
+                    phone_number__iexact=shipping_details.phone,
+                    country__iexact=shipping_details.address.country,
+                    postcode__iexact=shipping_details.address.postal_code,
+                    town_or_city__iexact=shipping_details.address.city,
+                    street_address1__iexact=shipping_details.address.line1,
+                    street_address2__iexact=shipping_details.address.line2,
+                    county__iexact=shipping_details.address.state,
+                    grand_total=grand_total,
+                    original_bag=bag,
+                    stripe_pid=pid,
+                )
+                If the order is found we set order exists to true
+                order_exists = True
+                break
+                # increment attempt by 1 if not found  
+            except Order.DoesNotExist:
+                attempt += 1
+                time.sleep(1)
+        # What to do if it does
+        if order_exists:
+            return HttpResponse(
+                content=f'Webhook received: {event["type"]} | SUCCESS: Verified order already in database',
+                status=200)
+        # Now handle an order that doesn't exist
+        else:
+            order = None
+            try:
+                order = Order.objects.create(
+                    full_name=shipping_details.name,
+                    email=billing_details.email,
+                    phone_number=shipping_details.phone,
+                    country=shipping_details.address.country,
+                    postcode=shipping_details.address.postal_code,
+                    town_or_city=shipping_details.address.city,
+                    street_address1=shipping_details.address.line1,
+                    street_address2=shipping_details.address.line2,
+                    county=shipping_details.address.state,
+                    original_bag=bag,
+                    stripe_pid=pid,
+                )
+                # load the bag from json instead of the session
+                for item_id, item_data in json.loads(bag).items():
+                    product = Product.objects.get(id=item_id)
+                    if isinstance(item_data, int):
+                        order_line_item = OrderLineItem(
+                            order=order,
+                            product=product,
+                            quantity=item_data,
+                        )
+                        order_line_item.save()
+                    else:
+                        for size, quantity in item_data['items_by_size'].items():
+                            order_line_item = OrderLineItem(
+                                order=order,
+                                product=product,
+                                quantity=quantity,
+                                product_size=size,
+                            )
+                            order_line_item.save()
+                            
+            # If anything goes wrong, delete the order
+            except Exception as e:
+                if order:
+                    order.delete()
+                return HttpResponse(
+                    content=f'Webhook received: {event["type"]} | ERROR: {e}',
+                    status=500)
+        return HttpResponse(
+            content=f'Webhook received: {event["type"]} | SUCCESS: Created order in webhook',
+            status=200)
+
+
+
+
+
+
+
 
 [Back to top](#walkthrough-steps)
 </details>
@@ -4273,12 +4398,113 @@ Run your server and submit an order to see if it all works
 <details>
 <summary>Part 16</summary>
 
+[ci video](https://youtu.be/lhYghsip36k)
+
+*Sometimes there can be a delay in server time so we need to add a delay before creating orders if they're not found immediately*
+
+ * webhook handler
+    * This is actually the attept = 1 while < 5 bit in code from previous video (I used source code)
+    * So the webhook will try find the order 5 times over 5 seconds before giving up and creating the order
+
+If a user places an identical order more than once, only one would be found. So we need to alter the order model.
+
+* checkout/models.py
+
+            original_bag = models.TextField(null=False, blank=False, default='')
+            stripe_pid = models.CharField(max_length=254, null=False, blank=False, default='')
+
+
+    * Original bag is a text field that will contain the original shopping bag that created it.
+    * Stripe_pid is a character field that will contain the stripe payment intent id
+
+* migrate changes
+
+            python3 manage.py makemigrations --dry-run
+            python3 manage.py makemigrations
+            python3 manage.py migrate --plan
+            python3 manage.py migrate 
+
+* Add fields to admin
+
+            readonly_fields = ('order_number', 'date',
+                       'delivery_cost', 'order_total',
+                       'grand_total', 'original_bag', 'stripe_pid')
+
+            fields = ('order_number', 'date', 'full_name',
+              'email', 'phone_number', 'country',
+              'postcode', 'town_or_city', 'street_address1',
+              'street_address2', 'county', 'delivery_cost',
+              'order_total', 'grand_total', 'original_bag', 'stripe_pid)
+
+* Update view to add these fields when form is submitted
+    * first go to checkout.html
+        * add hidden input containing client secret
+
+                        <!-- PAYMENT FIELDSET  -->
+                        <fieldset class="px-3">
+                            <legend class="fieldset-label small text-black px-2 w-auto">Payment</legend>
+                            <!-- A Stripe card element will go here -->
+                            <div class="mb-3" id="card-element"></div>
+
+                            <!-- Used to display form errors -->
+                            <div class="mb-3 text-danger" id="card-errors" role="alert"></div>
+
+                            <!-- Pass the client secret to the view so we can get the payment intent id -->
+                            <input type="hidden" value="{{ client_secret }}" name="client_secret">
+                        </fieldset>
+
+    * views.py in checkout to get it if the order form is valid
+
+                order_form = OrderForm(form_data)
+                # If form is valid, save the order 
+                if order_form.is_valid():
+                    # commit stops multiple saves
+                    order = order_form.save(commit=False)
+                    # get payment intent id
+                    pid = request.POST.get('client_secret').split('_secret')[0]
+                    # we've already got the shopping bag here so adding that to the model is simple.
+                    # we'll just dump it to a JSON string, set it on the order, and then we can save the order.
+                    order.stripe_pid = pid
+                    order.original_bag = json.dumps(bag)
+                    order.save()
+
+
+To remove all doubt as to whether we're looking for the proper order in the webhook handler, let's add the shopping bag and the stripe pid to the list of attributes we want to match on when finding it.
+
+* webhook_handler.py 
+
+            grand_total=grand_total,
+            original_bag=bag,
+            stripe_pid=pid,
+
+    * Do imports
+
+                from .models import Order, OrderLineItem
+                from products.models import Product
+                import json
+                import time
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
 <summary>Part 17</summary>
+
+
+[video url](https://youtu.be/mSNLcnTh618)
+
+Make a test purchase and check webhook response to make sure it all still works  
+It should. If it doesn't try the following:  
+* Check your secret wh key is being used (echo $STRIPE_WH_SECRET)
+* If not, save it to your variables and make sure scope is git_username/*
+* Ensure there aren't any typos
+* eu number in gitpod url and webhook address are the same
+* 8000 port is public
+
+
+
 
 [Back to top](#walkthrough-steps)
 
