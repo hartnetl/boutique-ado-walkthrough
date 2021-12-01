@@ -4503,7 +4503,10 @@ It should. If it doesn't try the following:
 * eu number in gitpod url and webhook address are the same
 * 8000 port is public
 
-
+Go to js file and comment out form submission and make another purchase.
+This simulates either a user who closed the page before the form was submitted
+but after the payment was confirmed or something else that went wrong
+causing the form not to be submitted.
 
 
 [Back to top](#walkthrough-steps)
