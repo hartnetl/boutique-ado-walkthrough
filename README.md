@@ -4153,11 +4153,18 @@ Write a view to handle if customer wants their details saved in checkout/views.p
         @require_POST
         def cache_checkout_data(request):
             try:
+                # make post request, give it the scret id, split it to get the payment intent id only
                 pid = request.POST.get('client_secret').split('_secret')[0]
+                # Set up stripe with the secret key to modify the payment intent
                 stripe.api_key = settings.STRIPE_SECRET_KEY
+                # Set up modification of pid
                 stripe.PaymentIntent.modify(pid, metadata={
+                    # this is what we want to change: 
+                    # json dump of their shopping bag
                     'bag': json.dumps(request.session.get('bag', {})),
+                    # if they want to save their info
                     'save_info': request.POST.get('save_info'),
+                    # user placing the order
                     'username': request.user,
                 })
                 return HttpResponse(status=200)
@@ -4170,18 +4177,87 @@ Write a view to handle if customer wants their details saved in checkout/views.p
 
             HttpResponse
             from django.views.decorators.http import require_POST
+            import json
+
 
         
-
-
-
-
 [Back to top](#walkthrough-steps)
 </details>
 
 
 <details>
 <summary>Part 14</summary>
+
+[ci video](https://youtu.be/dewcliXUY8Y)
+
+Create URL to access cache_checkout_data view
+
+* checkout/views.py 
+
+            path('cache_checkout_data/', views.cache_checkout_data, name='cache_checkout_data'),
+
+Go to javascript and create new variables
+
+* checkout/static/js
+    
+             // boolean of checked box by checking it's checked attribute 
+            var saveInfo = Boolean($('#id-save-info').attr('checked'));
+
+            // From using {% csrf_token %} in the form
+            var csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+            // create a small object to pass this information to the new view and also
+            // pass the client secret for the payment intent
+            var postData = {
+                'csrfmiddlewaretoken': csrfToken,
+                'client_secret': clientSecret,
+                'save_info': saveInfo,
+            };
+
+            // create variable for new url 
+            var url = '/checkout/cache_checkout_data/';
+
+    Wrap the confirmcardpayment function in a post method and a done response
+
+            // post data to view and when that's done call the confirmcardpayment function
+            $.post(url, postData).done(function () {
+            // Call confirm card payment method 
+                stripe.confirmCardPayment(clientSecret, {
+                   
+                   ...
+
+                    } else {
+                        // If the status of payment intent comes back as succeeded, submit the fprm 
+                        if (result.paymentIntent.status === 'succeeded') {
+                            form.submit();
+                        }
+                    }
+                });
+
+**EXPLANATION OF FORM SUBMIT JAVASCRIPT**
+[VIDEO LINK](https://youtu.be/dewcliXUY8Y?t=184)
+
+When the user clicks the submit button the event listener prevents the form from submitting
+and instead disables the card element and triggers the loading overlay.
+Then we create a few variables to capture the form data we can't put in
+the payment intent here, and instead post it to the cache_checkout_data view
+The view updates the payment intent and returns a 200 response, at which point we
+call the confirm card payment method from stripe and if everything is ok
+submit the form.
+If there's an error in the form then the loading overlay will
+be hidden the card element re-enabled and the error displayed for the user.
+If anything goes wrong posting the data to our view. We'll reload the page and
+display the error without ever charging the user.
+
+<br>
+
+* webhook_handler.py
+    * Add intent coming from stripe to payment_intent_succeeded
+
+                intent = event.data.object
+                print(intent)
+
+Run your server and submit an order to see if it all works 
 
 [Back to top](#walkthrough-steps)
 </details>
