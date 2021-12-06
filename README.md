@@ -15,6 +15,7 @@
 - [Toasts](#toasts)
 - [Checkout app](#checkout-app)
 - [Stripe payments](#stripe-payments)
+- [Profile app](#profile-app)
 
 
 ##
@@ -4514,3 +4515,147 @@ causing the form not to be submitted.
 </details>
 
 <hr>
+
+
+## Profile App
+
+<details>
+<summary>Open me</summary>
+
+<details>
+<summary>Part 1 - alter checkout page a smidge</summary>
+
+* Rearrange form order to be more logical 
+
+            {{ order_form.phone_number | as_crispy_field }}
+            {{ order_form.street_address1 | as_crispy_field }}
+            {{ order_form.street_address2 | as_crispy_field }}
+            {{ order_form.town_or_city | as_crispy_field }}
+            {{ order_form.county | as_crispy_field }}
+            {{ order_form.postcode | as_crispy_field }}
+            {{ order_form.country | as_crispy_field }}
+
+* In forms.py change placeholder of county
+
+            'county': 'County, State or locality',
+
+* Shipping country must be two letter code which can be confusing. Change that to dropdown.
+
+            pip3 install django_countries
+            pip3 freeze > requirements.txt
+
+    * models.py 
+
+                from django_countries.fields import CountryField
+
+                country = CountryField(blank_label='Country *', null=False, blank=False)
+    
+    * Migrate change
+
+                python3 manage.py makemigrations --dry-run
+                python3 manage.py makemigrations 
+                python3 manage.py migrate --plan
+                python3 manage.py migrate 
+
+    * Runserver, navigate to checkout page and make sure it works - it should
+
+* Grey out the text if a country isn't selected
+
+    * checkout css
+
+                select,
+                select option {
+                    color: #000000;
+                }
+
+                select:invalid,
+                select option[value=""] {
+                    color: #aab7c4 !important;
+                }
+
+* Remove placeholder in form for country (forms.py)
+
+    * Remove country from placeholder dictionary
+    * Alter the placeholder code below that 
+
+                # Set cursor to start in full name when page loads 
+                self.fields['full_name'].widget.attrs['autofocus'] = True
+                # Go through the list
+                for field in self.fields:
+                    if field != 'country':
+                        # If the field is required, add a star 
+                        if self.fields[field].required:
+                            placeholder = f'{placeholders[field]} *'
+                        else:
+                            placeholder = placeholders[field]
+                        # set placeholder values as per above
+                        self.fields[field].widget.attrs['placeholder'] = placeholder
+                    # Add the css class we haven't created yet
+                    self.fields[field].widget.attrs['class'] = 'stripe-style-input'
+                    # Remove labels
+                    self.fields[field].label = False
+
+
+
+
+
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 2</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 4</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 5</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 6</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 7</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 8</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 9</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 10</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+[Back to top](#walkthrough-steps)
+</details>

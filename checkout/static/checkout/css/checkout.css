@@ -39,6 +39,20 @@ stripe documentation. I couldn't find it cause of the update  */
     border: 1px solid #000;
 }
 
+/* select options are black...  */
+
+select,
+select option {
+    color: #000000;
+}
+
+/* unless it's invalid due to not having anything selected  */
+
+select:invalid,
+select option[value=""] {
+    color: #aab7c4 !important;
+}
+
 /* spinner  */
 
 #loading-overlay {
