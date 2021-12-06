@@ -4616,7 +4616,7 @@ To do that we'll need:
 * to attach the user's profile to all their orders.
 
 <details>
-<summary>Part 2 - create user profile model</summary>
+<summary>Part 2 - create user profile model and basic profile template</summary>
 
 * Create profile model
 
@@ -4743,13 +4743,217 @@ To do that we'll need:
 </details>
 
 <details>
-<summary>Part 3</summary>
+<summary>Part 3 - fix allauth layout issues </summary>
 
 [Back to top](#walkthrough-steps)
 </details>
 
+* Go to root level templates folder - allaith - accounts - base.html
+
+    * Add content
+
+                {% extends "base.html" %}
+
+                {% block content %}
+                    <div class="container header-container">
+                        <div class="overlay"></div>
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="allauth-form-inner-content">
+                                    {% block inner_content %}
+                                    {% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+
+* Go to login.html and change block content to block inner_content
+
+        {% block inner_content %}
+
+    * Also use crispy forms to render the form, make header a h2, and custom classes, some hr rules and add a home button
+
+                {% extends "account/base.html" %}
+
+                {% load i18n %}
+                {% load account socialaccount %}
+
+                {% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+                {% block inner_content %}
+
+                <hr>
+                <h2 class="logo-font mb-4">{% trans "Sign In" %}</h2>
+                <hr>
+
+                {% get_providers as socialaccount_providers %}
+
+                {% if socialaccount_providers %}
+                <p>{% blocktrans with site.name as site_name %}Please sign in with one
+                of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
+                for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
+
+                <div class="socialaccount_ballot">
+
+                <ul class="socialaccount_providers">
+                    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                </ul>
+
+                <div class="login-or">{% trans 'or' %}</div>
+
+                </div>
+
+                {% include "socialaccount/snippets/login_extra.html" %}
+
+                {% else %}
+                <p>{% blocktrans %}If you have not created an account yet, then please
+                <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
+                {% endif %}
+
+                <form class="login" method="POST" action="{% url 'account_login' %}">
+                {% csrf_token %}
+                {{ form|crispy }}
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                <a class="btn btn-outline-black rounded-0" href="{% url 'home' %}">Home</a>
+                <button class="primaryAction" type="submit">{% trans "Sign In" %}</button>
+                <p class="mt-2">
+                    <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+                </p>
+                </form>
+
+                {% endblock %}
+
+* Make the following changes to all files in the account folder
+
+    * Replace all the headers to match the one in the login template.
+    * Anywhere there's a Content block I'll replace it with inner content.
+    * Render all the forms that are currently form._p with crispy forms.
+    * Add home or back buttons where appropriate.
+
+
 <details>
-<summary>Part 4</summary>
+<summary>Part 4 - add CSS and wire up links for login and profiles </summary>
+
+[ci video](https://youtu.be/MwIhHxez4Jo)
+
+* Add css for allauth in base css file
+
+        /* Allauth form formatting */
+
+        .allauth-form-inner-content p {
+            margin-top: 1.5rem; /* mt-4 */
+            color: #6c757d; /* text-secondary */
+        }
+
+        .allauth-form-inner-content input {
+            border-color: #000;
+            border-radius: 0;
+        }
+
+        .allauth-form-inner-content label:not([for='id_remember']) {
+            display: none;
+        }
+
+        .allauth-form-inner-content input::placeholder {
+            color: #aab7c4;
+        }
+
+        .allauth-form-inner-content button,
+        .allauth-form-inner-content input[type='submit'] {
+            /* btn */
+            display: inline-block;
+            font-weight: 400;
+            color: #fff;
+            text-align: center;
+            vertical-align: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-color: #000;
+            border: 1px solid #000;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0;
+
+            /* standard bootstrap btn transitions */
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+
+        .allauth-form-inner-content button:hover,
+        .allauth-form-inner-content input[type='submit']:hover {	
+            color: #fff;
+            background-color: #222;
+            border-color: #222;
+        }
+
+        .allauth-form-inner-content a {
+            color: #17a2b8; /* text-info */
+        }
+
+
+        input[name='q']::placeholder {
+        color: #aab7c4;
+        }
+
+**Note** If you try to sign in now, it won't work because your code is trying to save the profile as it doesn't exist. Let's temporarily change the signal (in models.py) so it creates a profile.
+
+        @receiver(post_save, sender=User)
+        def create_or_update_user_profile(sender, instance, created, **kwargs):
+            """
+            Create or update the user profile
+            """
+            # if created:
+            UserProfile.objects.create(user=instance)
+            # Existing users: just save the profile
+            # instance.userprofile.save()
+
+If you try login now it should work. Reset the signal
+
+        @receiver(post_save, sender=User)
+        def create_or_update_user_profile(sender, instance, created, **kwargs):
+            """
+            Create or update the user profile
+            """
+            if created:
+                UserProfile.objects.create(user=instance)
+            # Existing users: just save the profile
+            instance.userprofile.save()
+
+* test registration process
+    * Test emails are logged to the console so go there to get the confirmation link
+    * You should be able to register then log in at this point
+
+* Let's make the profile links work 
+
+    * Update base template to link to profiles
+
+            <a href="{% url 'profile' %}" class="dropdown-item">My Profile</a>
+
+    * Update profiles/views.py
+
+                from django.shortcuts import render, get_object_or_404
+                from .models import UserProfile
+
+                def profile(request):
+                    """ Display the user's profile. """
+                    profile = get_object_or_404(UserProfile, user=request.user)
+
+                    template = 'profiles/profile.html'
+                    context = {
+                        'profile': profile,
+                    }
+
+                    return render(request, template, context)
+
+    * Go to profile template and render the profile
+
+            {{ profile }}
+
 
 [Back to top](#walkthrough-steps)
 </details>
