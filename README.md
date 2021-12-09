@@ -5426,9 +5426,77 @@ And for anonymous users by setting that field to none.
 </details>
 
 <details>
-<summary>Part 10</summary>
+<summary>Part 10 - send users an order confirmation email</summary>
 
-[Back to top](#walkthrough-steps)
+[ci video](https://youtu.be/GDibdNzuhSQ)
+
+
+* Create email files in checkout templates
+
+* Create email subject file
+
+        Boutique Ado Confirmation for Order Number {{ order.order_number }}
+
+* Create email body file 
+
+            Hello {{ order.full_name }}!
+
+            This is a confirmation of your order at Boutique Ado. Your order information is below:
+
+            Order Number: {{ order.order_number }}
+            Order Date: {{ order.date }}
+
+            Order Total: ${{ order.order_total }}
+            Delivery: ${{ order.delivery_cost }}
+            Grand Total: ${{ order.grand_total }}
+
+            Your order will be shipped to {{ order.street_address1 }} in {{ order.town_or_city }}, {{ order.country }}.
+
+            We've got your phone number on file as {{ order.phone_number }}.
+
+            If you have any questions, feel free to contact us at {{ contact_email }}.
+
+            Thank you for your order!
+
+            Sincerely,
+
+            Boutique Ado
+
+
+* go to webhook_handler file
+
+            def _send_confirmation_email(self, order):
+            """Send the user a confirmation email"""
+                cust_email = order.email
+                subject = render_to_string(
+                    'checkout/confirmation_emails/confirmation_email_subject.txt',
+                    {'order': order})
+                body = render_to_string(
+                    'checkout/confirmation_emails/confirmation_email_body.txt',
+                    {'order': order, 'contact_email': settings.DEFAULT_FROM_EMAIL})
+                
+                send_mail(
+                    subject,
+                    body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [cust_email]
+                )        
+
+    don't forget the imports
+
+            from django.core.mail import send_mail
+            from django.template.loader import render_to_string
+            from django.conf import settings
+
+    Add the call to send the mail after payment
+
+                self._send_confirmation_email(order)
+
+* add email as default in settings.py
+
+            DEFAULT_FROM_EMAIL = 'boutiqueado@example.com'
+
+* Test it by making a purchase
 </details>
 
 [Back to top](#walkthrough-steps)
