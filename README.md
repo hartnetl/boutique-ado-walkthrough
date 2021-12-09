@@ -4959,13 +4959,220 @@ If you try login now it should work. Reset the signal
 </details>
 
 <details>
-<summary>Part 5</summary>
+<summary>Part 5 - Build user profile form</summary>
+
+[ci video](https://youtu.be/NQxmvrqpSr0)
+
+* Create forms.py in profiles app
+
+            from django import forms
+            from .models import UserProfile
+
+            class UserProfileForm(forms.ModelForm):
+                class Meta:
+                    model = UserProfile
+                    exclude = ('user',)
+
+                def __init__(self, *args, **kwargs):
+                    """
+                    Add placeholders and classes, remove auto-generated
+                    labels and set autofocus on first field
+                    """
+                    super().__init__(*args, **kwargs)
+                    placeholders = {
+                        # add default to the front to match model 
+                        'default_phone_number': 'Phone Number',
+                        'default_postcode': 'Postal Code',
+                        'default_town_or_city': 'Town or City',
+                        'default_street_address1': 'Street Address 1',
+                        'default_street_address2': 'Street Address 2',
+                        'default_county': 'County, State or Locality',
+                    }
+
+                    self.fields['default_phone_number'].widget.attrs['autofocus'] = True
+                    for field in self.fields:
+                        if field != 'default_country':
+                            if self.fields[field].required:
+                                placeholder = f'{placeholders[field]} *'
+                            else:
+                                placeholder = placeholders[field]
+                            self.fields[field].widget.attrs['placeholder'] = placeholder
+                        self.fields[field].widget.attrs['class'] = 'border-black rounded-0 profile-form-input'
+                        self.fields[field].label = False
+
+* Go to profile view and import the form
+
+            from .forms import UserProfile
+
+    * Update view
+
+            def profile(request):
+          
+                form = UserProfileForm(instance=profile)
+                orders = profile.orders.all()
+
+                template = 'profiles/profile.html'
+                context = {
+                    'form': form,
+                }
+
+                return render(request, template, context)
+
+* Render form on profile template
+
+            {% extends "base.html" %}
+            {% load static %}
+
+            {% block extra_css %}
+                <link rel="stylesheet" href="{% static 'profiles/css/profile.css' %}">
+            {% endblock %}
+
+            {% block page_header %}
+                <div class="container header-container">
+                    <div class="row">
+                        <div class="col"></div>
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% block content %}
+                <div class="overlay"></div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <hr>
+                            <h2 class="logo-font mb-4">My Profile</h2>
+                            <hr>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+
+                        <!-- default delivery info  -->
+
+                        <div class="col-12 col-lg-6">
+                            <p class="text-muted">Default Delivery Information</p>
+                            <form class="mt-3" action="{% url 'profile' %}" method="POST" id="profile-update-form">
+                                {% csrf_token %}
+                                {{ form|crispy }}
+                                <button class="btn btn-black rounded-0 text-uppercase float-right">Update Information</button>
+                            </form>
+                        </div>
+
+                        <!-- order history -->
+
+                        <div class="col-12 col-lg-6">
+                            <p class="text-muted">Order History</p>
+                            {{ orders }}
+                        </div>
+                    </div>
+            {% endblock %}
+
+
+* Edit userprofile model a tad 
+
+        # one to one specifies each user can only have one profile and vice versa
+        user = models.OneToOneField(User, on_delete=models.CASCADE)
+        # info grabbed from order model - made default and optional
+        default_phone_number = models.CharField(max_length=20, null=True, blank=True)
+        default_street_address1 = models.CharField(max_length=80, null=True, blank=True)
+        default_street_address2 = models.CharField(max_length=80, null=True, blank=True)
+        default_town_or_city = models.CharField(max_length=40, null=True, blank=True)
+        default_county = models.CharField(max_length=80, null=True, blank=True)
+        default_postcode = models.CharField(max_length=20, null=True, blank=True)
+        default_country = CountryField(blank_label='Country', null=True, blank=True)
+
+* Add colour css to the form in profile css
+
+        #profile-update-form .form-control {
+            color: #000;
+        }
+
+        #profile-update-form input::placeholder {
+            color: #aab7c4;
+        }
+
 
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
-<summary>Part 6</summary>
+<summary>Part 6 - fix country colour on profile form </summary>
+
+[ci video](https://youtu.be/PfYcZwN3OqU)
+
+* Make the country grey by default, black when selected 
+
+    * profile css
+
+            #id_default_country,
+            #id_default_country option:not(:first-child) {
+                color: #000;
+            }
+
+            #id_default_country option:first-child {
+                color: #aab7c4;
+            }
+
+    * profile.html - add js
+
+                {% block postloadjs %}
+                    {{ block.super }}
+                    <script type="text/javascript" src="{% static 'profiles/js/countryfield.js' %}"></script>
+                {% endblock %}
+
+        * Create profile js file
+
+                    // get value of country field when page loads and store it in variable 
+                    let countrySelected = $('#id_default_country').val();
+                    // Use boolean to see if option is selected or empty string 
+                    if(!countrySelected) {
+                        // if its not Selected, make it grey 
+                        $('#id_default_country').css('color', '#aab7c4');
+                    };
+                    // capture the change event 
+                    $('#id_default_country').change(function() {
+                        // get the value of the box each time it changes 
+                        countrySelected = $(this).val();
+                        // if it's not selected mak it grey 
+                        if(!countrySelected) {
+                            $(this).css('color', '#aab7c4');
+                        // if it is selected make it black 
+                        } else {
+                            $(this).css('color', '#000');
+                        }
+                    });
+
+                
+* Write post handler for profile view
+
+    * profile/views.py
+
+            if request.method == 'POST':
+            form = UserProfileForm(request.POST, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Profile updated successfully')
+
+
+When you update profile info and there's stuff in the basket, your basket is displayed with the success message. We don't want that.  
+
+* profile / views.py
+    * Add this to context
+        
+        'on_profile_page': True
+
+* templates/includes/toasts/toast_success.html
+
+    * change 
+
+            {% if grand_total %}
+        
+        to
+
+            {% if grand_total and not on_profile_page %}
+
+
 
 [Back to top](#walkthrough-steps)
 </details>
