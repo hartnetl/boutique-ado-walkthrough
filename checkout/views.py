@@ -8,6 +8,8 @@ from bag.contexts import bag_contents
 from .forms import OrderForm
 from .models import Order, OrderLineItem
 from products.models import Product
+from profiles.models import UserProfile
+from profiles.forms import UserProfileForm
 
 
 # handle if user wants their details saved 
@@ -113,7 +115,7 @@ def checkout(request):
             messages.error(request, 'There was an error with your form. \
                 Please double check your information.')
     else:
-    # get request 
+        # get request 
         bag = request.session.get('bag', {})
     # if bag is empty
         if not bag:
@@ -131,7 +133,30 @@ def checkout(request):
             currency=settings.STRIPE_CURRENCY,
         )
 
-    # create empty instance of order form
+    # pre-fill user details on checkout 
+
+    # if user is authenticated
+    if request.user.is_authenticated:
+        try:
+            # get their profile
+            profile = UserProfile.objects.get(user=request.user)
+            # use initial to pre-fill the fields 
+            order_form = OrderForm(initial={
+                'full_name': profile.user.get_full_name(),
+                'email': profile.user.email,
+                'phone_number': profile.default_phone_number,
+                'country': profile.default_country,
+                'postcode': profile.default_postcode,
+                'town_or_city': profile.default_town_or_city,
+                'street_address1': profile.default_street_address1,
+                'street_address2': profile.default_street_address2,
+                'county': profile.default_county,
+            })
+        # if user is not authenticated, render a blank form 
+        except UserProfile.DoesNotExist:
+            order_form = OrderForm()
+    else:
+        # create empty instance of order form
         order_form = OrderForm()
 
     # message incase you forget to set secret key
@@ -149,7 +174,7 @@ def checkout(request):
     return render(request, template, context)
 
 
-def checkout_success(request, order_number):
+# def checkout_success(request, order_number):
     """
     Handle successful checkouts
     """
@@ -157,11 +182,83 @@ def checkout_success(request, order_number):
     save_info = request.session.get('save_info')
     # get order created in previous view 
     order = get_object_or_404(Order, order_number=order_number)
+
+    # We already know the form has been submitted and the order has been successfully processed at this point,
+    # so this is a good place to add the user profile to it.
+    if request.user.is_authenticated:
+        # get the user's profile
+        profile = UserProfile.objects.get(user=request.user)
+        # Attach the user's profile to the order
+        order.user_profile = profile
+        # save it 
+        order.save()
+
+        # Save the user's info if box was checked
+        if save_info:
+            profile_data = {
+                # these keys match the user profile model 
+                'default_phone_number': order.phone_number,
+                'default_country': order.country,
+                'default_postcode': order.postcode,
+                'default_town_or_city': order.town_or_city,
+                'default_street_address1': order.street_address1,
+                'default_street_address2': order.street_address2,
+                'default_county': order.county,
+            }
+            # Create an instance of the user profile form using the profile 
+            # data, telling it we're going to update the profile we've obtained above.
+            user_profile_form = UserProfileForm(profile_data, instance=profile)
+            # if the form is valid, save it
+            if user_profile_form.is_valid():
+                user_profile_form.save()
+
     messages.success(request, f'Order successfully processed! \
         Your order number is {order_number}. A confirmation \
         email will be sent to {order.email}.')
 
     # delete user's shopping bag
+    if 'bag' in request.session:
+        del request.session['bag']
+
+    template = 'checkout/checkout_success.html'
+    context = {
+        'order': order,
+    }
+
+    return render(request, template, context)
+
+def checkout_success(request, order_number):
+    """
+    Handle successful checkouts
+    """
+    save_info = request.session.get('save_info')
+    order = get_object_or_404(Order, order_number=order_number)
+
+    if request.user.is_authenticated:
+        profile = UserProfile.objects.get(user=request.user)
+        # Attach the user's profile to the order
+        order.user_profile = profile
+        order.save()
+
+        # Save the user's info
+        if save_info:
+            profile_data = {
+                'default_phone_number': order.phone_number,
+                'default_country': order.country,
+                'default_postcode': order.postcode,
+                'default_town_or_city': order.town_or_city,
+                'default_street_address1': order.street_address1,
+                'default_street_address2': order.street_address2,
+                'default_county': order.county,
+            }
+            user_profile_form = UserProfileForm(profile_data, instance=profile)
+            if user_profile_form.is_valid():
+                user_profile_form.save()
+
+    messages.success(request, f'Order successfully processed! \
+        Your order number is {order_number}. A confirmation \
+        email will be sent to {order.email}.')
+
     if 'bag' in request.session:
         del request.session['bag']
 

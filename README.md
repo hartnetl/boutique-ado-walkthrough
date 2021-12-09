@@ -5178,13 +5178,197 @@ When you update profile info and there's stuff in the basket, your basket is dis
 </details>
 
 <details>
-<summary>Part 7</summary>
+<summary>Part 7 - add user's order history to profile </summary>
+
+[ci video](https://youtu.be/ZdSH6hh8i3s)
+
+* Add order history to profile.html
+
+            <div class="col-12 col-lg-6">
+                <p class="text-muted">Order History</p>
+                <!-- create a small bootstrap table  -->
+                <div class="order-history table-responsive">
+                    <table class="table table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Order Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>
+                                        <!-- disply 6 numbers only, but show full with hover  -->
+                                        <a href="{% url 'order_history' order.order_number %}"
+                                        title="{{ order.order_number }}">
+                                            {{ order.order_number|truncatechars:6 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ order.date }}</td>
+                                    <td>
+                                        <!-- unordered, unstyled list  -->
+                                        <ul class="list-unstyled">
+                                            <!-- For each item in the orders list of line-items  -->
+                                            {% for item in order.lineitems.all %}
+                                                <li class="small">
+                                                    <!-- product size, name and quantity  -->
+                                                    {% if item.product.has_sizes %}
+                                                        Size {{ item.product.size|upper }}
+                                                    {% endif %}{{ item.product.name }} x{{ item.quantity }}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ order.grand_total }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+* Add css for max height in case user has a lot of orders
+
+        .order-history {
+            max-height: 416px; /* height of profile form + submit button */
+            overflow-y: auto;
+        }
+
+* Create order_history view in profiles/views.py
+
+        Import order model
+
+                from checkout.models import Order
+
+        def order_history(request, order_number):
+        # get the order 
+        order = get_object_or_404(Order, order_number=order_number)
+
+        # Add message to tell user they're looking at a past order confirmation
+        messages.info(request, (
+            f'This is a past confirmation for order number {order_number}. '
+            'A confirmation email was sent on the order date.'
+        ))
+
+        template = 'checkout/checkout_success.html'
+        context = {
+            'order': order,
+            # add the variable from_profile to check in that template if the user got there via the order history view
+            'from_profile': True,
+        }
+
+        return render(request, template, context)
+
+* Create url for it
+
+        path('order_history/<order_number>', views.order_history, name='order_history'),
+
+* checkout_success.html
+    * If user came from their profile page, send them back to it instead of showing latest deals at the end
+
+              <div class="row">
+                <div class="col-12 col-lg-7 text-right">
+                    {% if from_profile %}
+                        <a href="{% url 'profile' %}" class="btn btn-black rounded-0 my-2">
+                            <span class="icon mr-2">
+                                <i class="fas fa-angle-left"></i>
+                            </span>
+                            <span class="text-uppercase">Back to Profile</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'products' %}?category=new_arrivals,deals,clearance" class="btn btn-black rounded-0 my-2">
+                            <span class="icon mr-2">
+                                <i class="fas fa-gifts"></i>
+                            </span>
+                            <span class="text-uppercase">Now check out the latest deals!</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
 
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Part 8</summary>
+
+[ci video](https://youtu.be/F76YNC1Z4Bg)
+
+* Add user profile to order admin fields
+
+        fields = ('order_number', 'user_profile', 'date', 'full_name',
+
+
+* checkout/views.py update checkout success 
+
+        # We already know the form has been submitted and the order has been successfully processed at this point,
+        # so this is a good place to add the user profile to it.
+        if request.user.is_authenticated:
+            # get the user's profile 
+            profile = UserProfile.objects.get(user=request.user)
+            # Attach the user's profile to the order
+            order.user_profile = profile
+            # save it 
+            order.save()
+
+            # Save the user's info if box was checked
+            if save_info:
+                profile_data = {
+                    # these keys match the user profile model 
+                    'default_phone_number': order.phone_number,
+                    'default_country': order.country,
+                    'default_postcode': order.postcode,
+                    'default_town_or_city': order.town_or_city,
+                    'default_street_address1': order.street_address1,
+                    'default_street_address2': order.street_address2,
+                    'default_county': order.county,
+                }
+                # Create an instance of the user profile form using the profile 
+                # data, telling it we're going to update the profile we've obtained above.
+                user_profile_form = UserProfileForm(profile_data, instance=profile)
+                # if the form is valid, save it 
+                if user_profile_form.is_valid():
+                    user_profile_form.save()
+
+    Do imports
+
+            from profiles.models import UserProfile
+            from profiles.forms import UserProfileForm
+
+* test it works by first making sure there's no information in user profile, and then completing an order with the save info box checked. It should work!
+
+* Lets use their delivery info to pre-fill form on checkout view
+
+    * checkout/views.py 
+
+            if request.user.is_authenticated:
+                try:
+                    # get their profile
+                    profile = UserProfile.objects.get(user=request.user)
+                    # use initial to pre-fill the fields 
+                    order_form = OrderForm(initial={
+                        'full_name': profile.user.get_full_name(),
+                        'email': profile.user.email,
+                        'phone_number': profile.default_phone_number,
+                        'country': profile.default_country,
+                        'postcode': profile.default_postcode,
+                        'town_or_city': profile.default_town_or_city,
+                        'street_address1': profile.default_street_address1,
+                        'street_address2': profile.default_street_address2,
+                        'county': profile.default_county,
+                    })
+                # if user is not authenticated, render a blank form 
+                except UserProfile.DoesNotExist:
+                    order_form = OrderForm()
+            else:
+                # create empty instance of order form
+                order_form = OrderForm()
+
+    * Test this worked by making a new order
 
 [Back to top](#walkthrough-steps)
 </details>
