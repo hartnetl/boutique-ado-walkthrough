@@ -4605,6 +4605,9 @@ causing the form not to be submitted.
 [Back to top](#walkthrough-steps)
 </details>
 
+<details>
+<summary>Part 2 - create user profile model and basic profile template</summary>
+
 The profile app will serve two purposes: 
 
 1. Provide a user with a place to save default delivery information.
@@ -4614,9 +4617,6 @@ To do that we'll need:
 
 * a user profile model which is attached to the logged-in user.
 * to attach the user's profile to all their orders.
-
-<details>
-<summary>Part 2 - create user profile model and basic profile template</summary>
 
 * Create profile model
 
@@ -4745,8 +4745,6 @@ To do that we'll need:
 <details>
 <summary>Part 3 - fix allauth layout issues </summary>
 
-[Back to top](#walkthrough-steps)
-</details>
 
 * Go to root level templates folder - allaith - accounts - base.html
 
@@ -4833,6 +4831,9 @@ To do that we'll need:
     * Render all the forms that are currently form._p with crispy forms.
     * Add home or back buttons where appropriate.
 
+
+[Back to top](#walkthrough-steps)
+</details>
 
 <details>
 <summary>Part 4 - add CSS and wire up links for login and profiles </summary>
@@ -5294,7 +5295,7 @@ When you update profile info and there's stuff in the basket, your basket is dis
 </details>
 
 <details>
-<summary>Part 8</summary>
+<summary>Part 8 - Save details to profile and use them to auto fill checkout form </summary>
 
 [ci video](https://youtu.be/F76YNC1Z4Bg)
 
@@ -5370,11 +5371,56 @@ When you update profile info and there's stuff in the basket, your basket is dis
 
     * Test this worked by making a new order
 
+**NOTE**
+If you don't see the full name and email address filled out, make sure you've gotthem filled out on your user account in the admin.  
+It really would be ideal to add fields to update those on the profile also.  
+But in the interest of time, we'll skip that part as the process would be pretty much the same as what we've already done.  
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
-<summary>Part 9</summary>
+<summary>Part 9 - let webhooks handle user profiles too in case views fail </summary>
+
+[ci video](https://youtu.be/-p2TIPJACrY)
+
+* checkout/webhook_handler.py
+
+        # set profile to none so anonymous users can checkout 
+        profile = None
+        # get the username 
+        username = intent.metadata.username
+        # if username isn't anonymous, they were authenticated 
+        if username != 'AnonymousUser':
+            # get their profile using their username 
+            profile = UserProfile.objects.get(user__username=username)
+            # if the save info box is checked, we update their shipping details 
+            if save_info:
+                profile.default_phone_number = shipping_details.phone
+                profile.default_country = shipping_details.address.country
+                profile.default_postcode = shipping_details.address.postal_code
+                profile.default_town_or_city = shipping_details.address.city
+                profile.default_street_address1 = shipping_details.address.line1
+                profile.default_street_address2 = shipping_details.address.line2
+                profile.default_county = shipping_details.address.state
+                profile.save()
+
+
+Since we've already got their profile and if they weren't logged in it will just be none.
+We can simply add it to their order when the webhook creates it.
+In this way, the webhook handler can create orders for both authenticated users by attaching their profile.
+And for anonymous users by setting that field to none.
+
+* Just add this line for creating orders in the webhook handler 
+
+            user_profile=profile,
+
+* Import model at the top
+        
+        from profiles.models import UserProfile
+
+* Test to make sure it works by commenting out form submission in checkout js
 
 [Back to top](#walkthrough-steps)
 </details>
@@ -5387,3 +5433,5 @@ When you update profile info and there's stuff in the basket, your basket is dis
 
 [Back to top](#walkthrough-steps)
 </details>
+
+<hr>
