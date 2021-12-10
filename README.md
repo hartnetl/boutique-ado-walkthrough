@@ -16,6 +16,7 @@
 - [Checkout app](#checkout-app)
 - [Stripe payments](#stripe-payments)
 - [Profile app](#profile-app)
+- [Product Admin](#product-admin)
 
 
 ##
@@ -5503,3 +5504,86 @@ And for anonymous users by setting that field to none.
 </details>
 
 <hr>
+
+
+## PRODUCT ADMIN
+
+
+<details>
+<summary>Part 1 - product form</summary>
+
+[ci video](https://youtu.be/EeLC_22xs8Q)
+
+We want store owners to be able to add products from the front end 
+
+* Create forms.py in products app 
+
+            from django import forms
+            from .models import Product, Category
+
+
+            class ProductForm(forms.ModelForm):
+
+                class Meta:
+                    model = Product
+                    fields = '__all__'
+
+                # over ride the init method to make changes to the fields 
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    categories = Category.objects.all()
+                    # After getting all the categories, create a list of tuples of the 
+                    # friendly names associated with their category ids using list
+                    # comprehension. This is just a shorthand way of creating a for loop that adds items to a list.
+                    friendly_names = [(c.id, c.get_friendly_name()) for c in categories]
+
+                    # Use friendly names instead of id
+                    self.fields['category'].choices = friendly_names
+                    # Add style classes to all fields
+                    for field_name, field in self.fields.items():
+                        field.widget.attrs['class'] = 'border-black rounded-0'
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 2- Add product view </summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 3 - Finish add product functionality</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 4 - Editing products</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 5 - Deleting products</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 6 - Securing the views</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 7 - Fixing the image (pt I)</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Part 8 - Fixing the image (pt II)</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
