@@ -5549,6 +5549,35 @@ We want store owners to be able to add products from the front end
 <details>
 <summary>Part 2- Add product view </summary>
 
+[ci video](https://youtu.be/hWZdxrDVzG8)
+
+* Add add_product view to products/views.py
+
+                def add_product(request):
+                    """ Add a product to the store """
+                    form = ProductForm()
+                    template = 'products/add_product.html'
+                    context = {
+                        'form': form,
+                    }
+
+                    return render(request, template, context)
+
+    Import the form
+
+                from .forms import ProductForm
+
+* Create url for it
+         
+           path('add/', views.add_product, name='add_product'),
+
+* Set product detail url as an integer 
+
+            path('<int:product_id>/', views.product_detail, name='product_detail'),
+
+* Create add products template
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
