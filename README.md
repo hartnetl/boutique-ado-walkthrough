@@ -17,7 +17,7 @@
 - [Stripe payments](#stripe-payments)
 - [Profile app](#profile-app)
 - [Product Admin](#product-admin)
-
+- [Deploy to heroku](Deploy to heroku)
 
 ##
 
@@ -5943,6 +5943,116 @@ You can now delete using the manual url ( /products/delete/product-id )
                     });
                 </script>
             {% endblock %}
-            
+
 [Back to top](#walkthrough-steps)
 </details>
+
+<hr>
+
+## Deploy to heroku
+
+<details>
+<summary>Create the heroku app</summary>
+
+**Notes**  
+*Error fix*  
+If you get the error below during the steps to deployment:
+
+        django.db.utils.OperationalError: FATAL: role "somerandomletters" does not exist
+
+Please run the following command in the terminal to fix it:
+
+        unset PGHOSTADDR
+
+*A note for creating your database if you didn't use fixtures*  
+When you come to follow this process for your milestone project, you may not have used a fixtures file to populate your database like the instructor did.
+
+If this is the case, manually re-creating your database when you come to deploy can take a considerable amount of time. Thankfully, there is a short process you can follow to download your local mysql database and then upload it to postgres:
+
+* Make sure your manage.py file is connected to your mysql database
+* Use this command to backup your current database and load it into a db.json file:
+            ./manage.py dumpdata --exclude auth.permission --exclude contenttypes > db.json
+* Connect your manage.py file to your postgres database
+* Then use this command to load your data from the db.json file into postgres:
+            ./manage.py loaddata db.json
+
+
+[ci video](https://youtu.be/6mv-Qp37X4I)
+
+* Create heroku app
+    * Go to heroku.com
+    * Click 'new'
+        * Create the app
+        * Go to 'resources'
+            * search 'heroku'
+            * pick 'Heroku Postgres' and select the 'Hobby Dev - Free' option
+
+* Install dj database url and psycopg2 to your gitpod environment
+
+                pip3 install dj_database_url
+                pip3 install psycopg2-binary
+                pip3 freeze > requirements.txt
+
+* Setup the store's new database 
+    * settings.py
+        
+            import dj database url
+
+            Replace default database setup
+
+                    DATABASES = {'default': dj_database_url.parse('the_heroku_database_url')}
+
+                To get the heroku database url go to your newly created heroku app -> Settings -> Reveal config vars -> Copy the DATABASE_URL value
+
+* We need to do migrations to connect to postgres
+
+            python3 manage.py showmigrations
+            python3 manage.py migrate
+
+* import product data
+
+            python3 manage.py loaddata categories
+            python3 manage.py loaddata products
+
+* Create superuser 
+
+            python3 manage.py createsuperuser
+
+* Remove heroku database config and uncomment the original to database url doesn't end up in version control
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Deploy to heroku</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Create aws account</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Create aws groups, policies, users</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Connect django to s3</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Caching, media files and stripe</summary>
+
+</details>
+
+[Back to top](#walkthrough-steps)
+
+
+<hr>
