@@ -6324,6 +6324,18 @@ We can do this through another service called Iam which stands for Identity and 
                 'CacheControl': 'max-age=94608000',
             }
 
+* Add media files to s3
+    * Go to s3 on aws.com
+        * Create folder called media
+        * Upload files
+        * Select all your project images from wherever they're saved
+        * Select grant public read access
+        * Upload
+
+* Confirm email address for superuser on postgres database
+    * Login to admin from heroku app
+    
+
 </details>
 
 [Back to top](#walkthrough-steps)
