@@ -5151,10 +5151,14 @@ If you try login now it should work. Reset the signal
     * profile/views.py
 
             if request.method == 'POST':
-            form = UserProfileForm(request.POST, instance=profile)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Profile updated successfully')
+                form = UserProfileForm(request.POST, instance=profile)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'Profile updated successfully')
+                else:
+                    messages.error(request, 'Update failed. Please ensure the form is valid.')
+            else:
+                form = UserProfileForm(instance=profile)
 
 
 When you update profile info and there's stuff in the basket, your basket is displayed with the success message. We don't want that.  
@@ -5577,12 +5581,107 @@ We want store owners to be able to add products from the front end
 
 * Create add products template
 
+            {% extends "base.html" %}
+            {% load static %}
+
+            {% block page_header %}
+                <div class="container header-container">
+                    <div class="row">
+                        <div class="col"></div>
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% block content %}
+                <div class="overlay"></div>
+                <div class="container">
+
+                    <!-- page title  -->
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <hr>
+                            <h2 class="logo-font mb-4">Product Management</h2>
+                            <h5 class="text-muted">Add a Product</h5>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <!-- Add product form -->
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <!-- You need the enctype (encoding) to properly handle images  -->
+                            <form method="POST" action="{% url 'add_product' %}" class="form mb-2" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ form | crispy }}
+                                <!-- form buttons  -->
+                                <div class="text-right">
+                                    <a class="btn btn-outline-black rounded-0" href="{% url 'products' %}">Cancel</a>
+                                    <button class="btn btn-black rounded-0" type="submit">Add Product</button>
+                                </div>
+                            </form>
+                        </div>            
+                    </div>
+                </div>
+            {% endblock %}
+
 
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Part 3 - Finish add product functionality</summary>
+
+[ci video](https://youtu.be/JAQDbErhPiw)
+
+* Write post handler for add_products view
+
+    * products/views.py - add_product
+
+                def add_product(request):
+                    """ Add a product to the store """
+                    # post handler
+                    if request.method == 'POST':
+                        # Instantiate a new instance of the product form from request.post and
+                        # include request.files to get the image of the product if one was submitted.
+                        form = ProductForm(request.POST, request.FILES)
+                        # If the form is valid, save it
+                        if form.is_valid():
+                            form.save()
+                            messages.success(request, 'Successfully added product!')
+                            return redirect(reverse('add_product'))
+                        else:
+                            # Error on form
+                            messages.error(request, 'Failed to add product. Please ensure the form is valid.')
+                    else:
+                        form = ProductForm()
+
+                    template = 'products/add_product.html'
+                    context = {
+                        'form': form,
+                    }
+
+                    return render(request, template, context)
+
+    * You should now be able to add products using the form. However, if you try to add it to your cart you get an error if an image wasn't uploaded. 
+
+        * Go to templates/includes/toasts_success.html to choose whether or not to render the image
+
+                    {% if item.product.image %}
+                        <img class="w-100" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                        <img class="w-100" src="{{ MEDIA_URL }}noimage.png">
+                    {% endif %}
+        
+        * Go to bag.html and apply the same fix 
+
+* Add a link to add product page in the base template and mobile top header
+
+            {% if request.user.is_superuser %}
+                <a href="{% url 'add_product' %}" class="dropdown-item">Product Management</a>
+            {% endif %}
+
 
 [Back to top](#walkthrough-steps)
 </details>
