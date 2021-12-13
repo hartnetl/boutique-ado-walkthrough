@@ -19,6 +19,7 @@
 - [Product Admin](#product-admin)
 - [Deploy to heroku](#deploy-to-heroku)
 - [Sending emails with Django](#sending-emails)
+- [Code Refactoring](#code-refactoring)
 
 ##
 
@@ -6412,5 +6413,81 @@ We would also likely want to write a plethora of tests for our application, in p
 </details>
 
 [Back to top](#walkthrough-steps)
+
+<hr>
+
+## CODE REFACTORING
+
+<details>
+<summary>Base css, login and registration</summary>
+
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/933797d5e14d6c3f072df31adf0ca6f938d02218)  
+[video](https://youtu.be/xv5DJ16kg6U)
+
+CSS ISSUES
+
+            /* pad the top a bit when navbar is collapsed on mobile */
+            @media (max-width: 991px) {
+                .header-container {
+                    padding-top: 116px;
+                }
+
+                body {
+                    height: calc(100vh - 116px);
+                }
+
+                .display-4.logo-font.text-black {
+                    font-size: 2rem;
+                }
+
+                .nav-link {
+                    padding: 0.15rem;
+                }
+
+                .nav-link i.fa-lg {
+                    font-size: 1rem;
+                }
+
+                .navbar-toggler {
+                    padding: .6rem .6rem;
+                    font-size: 1rem;
+                }
+
+                #delivery-banner h4 {
+                    font-size: .9rem;
+                }
+
+                .btn.btn-outline-black.rounded-0,
+                .btn.btn-black.rounded-0 {
+                    padding: .375rem .375rem;
+                }
+
+                .btn.btn-outline-black.rounded-0.btn-lg,
+                .btn.btn-black.rounded-0.btn-lg {
+                    padding: .375rem .375rem;
+                    font-size: .75rem;
+                }
+
+                .increment-qty, .decrement-qty {
+                    padding: .25rem .5rem !important;
+                }
+            }
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Shopping bag</summary>
+
+[Back to top](#walkthrough-steps)
+</details>
+
+<details>
+<summary>Flake8 and python</summary>
+
+</details>
+
+[Back to top](#walkthrough-steps)
+
 
 <hr>
