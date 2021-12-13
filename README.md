@@ -6473,6 +6473,18 @@ CSS ISSUES
                 }
             }
 
+* Add profile url to mobile-top-header.html
+
+* Give mobile users a way to get to the home page
+    * main-nav.html
+
+                <!-- Home button for mobile  -->
+                <li class="nav-item d-block d-md-none">
+                    <a class="logo-font font-weight-bold nav-link text-black mr-5" href="{% url 'home' %}" id="home-link">
+                        Home
+                    </a>
+                </li>
+
 [Back to top](#walkthrough-steps)
 </details>
 

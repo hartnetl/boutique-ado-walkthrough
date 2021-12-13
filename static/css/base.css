@@ -322,6 +322,7 @@ input[name='q']::placeholder {
         font-size: .9rem;
     }
 
+    /* Product detail and shopping bag fonts  */
     .btn.btn-outline-black.rounded-0,
     .btn.btn-black.rounded-0 {
         padding: .375rem .375rem;
@@ -333,6 +334,7 @@ input[name='q']::placeholder {
         font-size: .75rem;
     }
 
+    /* buttons must follow this  */
     .increment-qty, .decrement-qty {
         padding: .25rem .5rem !important;
     }
