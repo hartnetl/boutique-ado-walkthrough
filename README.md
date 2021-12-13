@@ -6070,6 +6070,30 @@ If this is the case, manually re-creating your database when you come to deploy 
         git push heroku main
 
 
+If you run your heroku site now it should work (with no css)
+
+
+* Go to heroku and set it to auto deploy when pushed
+
+    * heroku app
+        * Deploy
+            * Deployment method -> github
+                * Connect your github and search for your repo name
+                * Connect that
+                * Enable auto deploy further down the page
+
+* Get a django secret key generator (<https://miniwebtool.com/django-secret-key-generator/>)
+* Go to heroku -> settings -> Display config vars
+    * SECRET_KEY
+    * Paste in your secret key for the value
+
+* Settings.py of environment
+    * Get secret key from environment
+
+                SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    
+    * Only set debug to true while in development
+
 [Back to top](#walkthrough-steps)
 </details>
 
