@@ -6307,15 +6307,22 @@ We can do this through another service called Iam which stands for Identity and 
 
 
 
-
-
-
-
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Caching, media files and stripe</summary>
+
+[ci video](https://youtu.be/JPb82nILolU)
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/9ed36dc2c07228041b56b28174dd96ee56e6c59a)
+
+* Add file caching to settings.py
+
+            # Cache control - tells browser to cache files for a long time
+            AWS_S3_OBJECT_PARAMETERS = {
+                'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+                'CacheControl': 'max-age=94608000',
+            }
 
 </details>
 
