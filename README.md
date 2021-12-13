@@ -6407,6 +6407,7 @@ We would also likely want to write a plethora of tests for our application, in p
                 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASS')
                 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
 
+* test using a real / fake email to register (temp mail)[https://temp-mail.org/en/]
 
 </details>
 
