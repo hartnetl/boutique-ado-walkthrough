@@ -6062,7 +6062,13 @@ If this is the case, manually re-creating your database when you come to deploy 
 
 * Add heroku app to allowed hosts in settings.py
 
-        ALLOWED_HOSTS = ['ckz8780-boutique-ado.herokuapp.com', 'localhost']
+        ALLOWED_HOSTS = ['ci-boutique-ado-walkthrough.herokuapp.com', 'localhost']
+
+* Setup your heroku app for remote pushing and push
+
+        heroku git:remote -a ci-boutique-ado-walkthrough
+        git push heroku main
+
 
 [Back to top](#walkthrough-steps)
 </details>
