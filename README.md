@@ -17,7 +17,7 @@
 - [Stripe payments](#stripe-payments)
 - [Profile app](#profile-app)
 - [Product Admin](#product-admin)
-- [Deploy to heroku](Deploy to heroku)
+- [Deploy to heroku](#deploy-to-heroku)
 
 ##
 
@@ -6025,6 +6025,44 @@ If this is the case, manually re-creating your database when you come to deploy 
 
 <details>
 <summary>Deploy to heroku</summary>
+
+[ci video](https://youtu.be/Tp2CU1qpgJo)
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/c82c677a83756a84c24181ed124e50ad38de67cf)
+
+* Add if statement in settings.py so that when our app is running on Heroku where the database URL environment variable will be defined.
+
+        if 'DATABASE_URL' in os.environ:
+            DATABASES = {
+                'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+            }
+        else:
+            DATABASES = {
+                'default': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+                }
+            }
+
+* install gunicorn to act as the webserver
+
+        pip3 install gunicorn
+        pip3 freeze > requirements.txt
+
+* Create procfile
+
+        web: gunicorn boutique_ado.wsgi:application
+
+* login to heroku
+
+        heroku login -i
+
+* Temporarily disable collect static
+
+        heroku config:set DISABLE_COLLECTSTATIC=1 --app ci-boutique-ado-walkthrough
+
+* Add heroku app to allowed hosts in settings.py
+
+        ALLOWED_HOSTS = ['ckz8780-boutique-ado.herokuapp.com', 'localhost']
 
 [Back to top](#walkthrough-steps)
 </details>
