@@ -5830,13 +5830,56 @@ You can now delete using the manual url ( /products/delete/product-id )
                 return redirect(reverse('home'))
 
 
-
-
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Part 7 - Fixing the image (pt I)</summary>
+
+[video](https://youtu.be/aQ0iYXzXOi8)
+
+* Create widgets.py in products
+
+            # import this file https://github.com/django/django/blob/main/django/forms/widgets.py
+            from django.forms.widgets import ClearableFileInput
+            # this is userd for translation
+            from django.utils.translation import gettext_lazy as _
+
+            # create a custom class which inherits from the original one
+            class CustomClearableFileInput(ClearableFileInput):
+                # override these settings
+                clear_checkbox_label = _('Remove')
+                initial_text = _('Current Image')
+                input_text = _('')
+                template_name = 'products/custom_widget_templates/custom_clearable_file_input.html'
+
+* Create the template described above
+
+            <!-- Edit from here https://github.com/django/django/blob/main/django/forms/templates/django/forms/widgets/clearable_file_input.html -->
+            {% if widget.is_initial %}
+                <p>{{ widget.initial_text }}:</p>
+                <a href="{{ widget.value.url }}">
+                    <img width="96" height="96" class="rounded shadow-sm" src="{{ widget.value.url }}">
+                </a>
+                {% if not widget.required %}
+                    <div class="custom-control custom-checkbox mt-2">
+                        <input class="custom-control-input" type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}">
+                        <label class="custom-control-label text-danger" for="{{ widget.checkbox_id }}">{{ widget.clear_checkbox_label }}</label>
+                    </div>
+                {% endif %}<br>
+                {{ widget.input_text }}
+            {% endif %}
+            <span class="btn btn-black rounded-0 btn-file">
+                Select Image <input id="new-image" type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+            </span>
+            <strong><p class="text-danger" id="filename"></p></strong>
+
+* Tell products/forms.py we wanna use these widget files
+
+            from .widgets import CustomClearableFileInput
+
+            image = forms.ImageField(label='Image', required=False, widget=CustomClearableFileInput)
+
 
 [Back to top](#walkthrough-steps)
 </details>
@@ -5844,5 +5887,62 @@ You can now delete using the manual url ( /products/delete/product-id )
 <details>
 <summary>Part 8 - Fixing the image (pt II)</summary>
 
+[video](https://youtu.be/yAYDJjQHDjg)
+
+* Add styling for custom widget to base.css 
+
+                /* Product form  */
+
+                .btn-file {
+                    /* set overflow of span around file input */
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .btn-file input[type="file"] {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    min-width: 100%;
+                    min-height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                }
+
+                .custom-checkbox .custom-control-label::before {
+                    border-radius: 0;
+                    border-color: #dc3545;
+                }
+
+                .custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+                    background-color: #dc3545;
+                    border-color: #dc3545;
+                    border-radius: 0;
+                }
+
+    
+* Add if statement to add and edit_product.html to only render 'image' label if it's not our custom widget
+
+                    {% csrf_token %}
+                    {% for field in form %}
+                        {% if field.name != 'image' %}
+                            {{ field | as_crispy_field }}
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    {% endfor %}
+
+* Add js to the bottom of each file to tell user what image will be changed to 
+
+            {% block postloadjs %}
+                {{ block.super }}
+                <script type="text/javascript">
+                    $('#new-image').change(function() {
+                        var file = $('#new-image')[0].files[0];
+                        $('#filename').text(`Image will be set to: ${file.name}`);
+                    });
+                </script>
+            {% endblock %}
+            
 [Back to top](#walkthrough-steps)
 </details>
