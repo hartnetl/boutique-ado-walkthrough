@@ -5809,6 +5809,29 @@ You can now delete using the manual url ( /products/delete/product-id )
 <details>
 <summary>Part 6 - Securing the views</summary>
 
+[ci video](https://youtu.be/u6tMGKEfX1k)
+
+* Alter the product apps views.py
+
+        import login required decorator
+
+                from django.contrib.auth.decorators import login_required
+
+        Add it to the add/edit/delete product views as a wrapper
+
+* Do the same for the profile view
+
+* Back to products/views.py
+
+    * Only superusers have access to add/edit/delete views
+
+            if not request.user.is_superuser:
+                messages.error(request, 'Sorry, only store owners can do that.')
+                return redirect(reverse('home'))
+
+
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
