@@ -5648,9 +5648,9 @@ We want store owners to be able to add products from the front end
                         form = ProductForm(request.POST, request.FILES)
                         # If the form is valid, save it
                         if form.is_valid():
-                            form.save()
+                            product = form.save()
                             messages.success(request, 'Successfully added product!')
-                            return redirect(reverse('add_product'))
+                            return redirect(reverse('product_detail', args=[product.id]))
                         else:
                             # Error on form
                             messages.error(request, 'Failed to add product. Please ensure the form is valid.')
@@ -5731,6 +5731,38 @@ We want store owners to be able to add products from the front end
                 </div>
             {% endblock %}
 
+* Create view for edit_product
+
+            def edit_product(request, product_id):
+                """ Edit a product in the store """
+                product = get_object_or_404(Product, pk=product_id)
+                if request.method == 'POST':
+                    form = ProductForm(request.POST, request.FILES, instance=product)
+                    if form.is_valid():
+                        form.save()
+                        messages.success(request, 'Successfully updated product!')
+                        return redirect(reverse('product_detail', args=[product.id]))
+                    else:
+                        messages.error(request, 'Failed to update product. Please ensure the form is valid.')
+                else:
+                    # display prefilled form 
+                    form = ProductForm(instance=product)
+                    messages.info(request, f'You are editing {product.name}')
+
+                template = 'products/edit_product.html'
+                context = {
+                    'form': form,
+                    'product': product,
+                }
+
+                return render(request, template, context)
+
+* Add url for the view
+
+            path('edit/<int:product_id>/', views.edit_product, name='edit_product'),
+
+
+You should be able to edit items with the manual url ( /products/edit/1 )
 
 
 [Back to top](#walkthrough-steps)
@@ -5738,6 +5770,38 @@ We want store owners to be able to add products from the front end
 
 <details>
 <summary>Part 5 - Deleting products</summary>
+
+[video](https://youtu.be/mm1smaUeisU)
+
+* Create url for deleting (no template required )
+
+            path('delete/<int:product_id>/', views.delete_product, name='delete_product'),
+
+
+* Create delete view
+
+            def delete_product(request, product_id):
+                """ Delete a product from the store """
+                product = get_object_or_404(Product, pk=product_id)
+                product.delete()
+                messages.success(request, 'Product deleted!')
+                return redirect(reverse('products'))
+
+You can now delete using the manual url ( /products/delete/product-id )
+
+* Let's add edit and delete links 
+
+    * On the product cards on all products page (products.html)
+    * On the product detail page
+
+                    {% if request.user.is_superuser %}
+                        <small class="ml-3">
+                            <a href="{% url 'edit_product' product.id %}">Edit</a> | 
+                            <a class="text-danger" href="{% url 'delete_product' product.id %}">Delete</a>
+                        </small>
+                    {% endif %}
+
+* Check they're now on the pages
 
 [Back to top](#walkthrough-steps)
 </details>
