@@ -6094,11 +6094,88 @@ If you run your heroku site now it should work (with no css)
     
     * Only set debug to true while in development
 
+                DEBUG = 'DEVELOPMENT' in os.environ
+
+push your app and it should auto build on heroku
+
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Create aws account</summary>
+
+CORS configuration
+
+**Important**  
+AWS updated their systems after this video was made and the code from the video above for the CORS configuration no longer works.
+
+Please use the following code for your CORS configuration instead:
+
+[
+  {
+      "AllowedHeaders": [
+          "Authorization"
+      ],
+      "AllowedMethods": [
+          "GET"
+      ],
+      "AllowedOrigins": [
+          "*"
+      ],
+      "ExposeHeaders": []
+  }
+]
+
+
+[ci video](https://youtu.be/uGdZeX319Q4)
+
+* go to aws.amazon.com and create aws account
+* Search for 's3' when logged in
+* create bucket
+    * Name it the same as your heroku app
+    * Uncheck block all public access (needs to be public for static files)
+    * acknowledge the bucket will be public
+* Go to bucket
+    * Properties
+        * Static website hosting
+            * Use to host website
+            * Fill in defaults 
+            * save
+    * Permissions
+        * CORS congifuration
+            * Edit
+
+                        [
+                        {
+                            "AllowedHeaders": [
+                                "Authorization"
+                            ],
+                            "AllowedMethods": [
+                                "GET"
+                            ],
+                            "AllowedOrigins": [
+                                "*"
+                            ],
+                            "ExposeHeaders": []
+                        }
+                        ]
+
+        * Bucket policy
+            * Edit
+                * Policy generator
+                    * Type: s3 bucket policy
+                    * Effect: Allow
+                    *  Principal: *
+                    * Action: Get object
+                    * Copy ARN from bucket policy page and paste into generator page
+                    * Click add statement
+                    * Click generate policy
+                    * Copy the policy and paste into edit box on policy page
+                    * Add /* to the resource
+                    * Save
+        * Access control list
+            * Edit
+                * Public access -> list
 
 [Back to top](#walkthrough-steps)
 </details>
@@ -6106,11 +6183,133 @@ If you run your heroku site now it should work (with no css)
 <details>
 <summary>Create aws groups, policies, users</summary>
 
+[ci video](https://youtu.be/BzzjLvC0Fcc)
+
+With our s3 bucket ready to go. Now we need to create a user to access it.  
+We can do this through another service called Iam which stands for Identity and Access Management.
+
+* Go to aws and search 'IAM'  
+
+    The process here is first we're going to create a group for our user to live in.
+    Then create an access policy giving the group access to the s3 bucket we created.
+    And finally, assign the user to the group so it can use the policy to access all our files.
+
+    * Create a group
+        * In IAM click 'user groups'
+            * New group
+            * Name it 'manage-boutique-ado" 
+            * Create
+        * Now go to 'policies'
+            * Create policy
+            * JSON tab
+                * Click 'import managed policy'
+                * Search s3
+                * Click Amazons3FullAccess
+                * Import
+                * Nip back to s3 - permissions - bucket policy and copy the arn
+                * Paste it in as so
+
+                            "Resource": [
+                                "arn:aws:s3:::ci-boutique-ado-walkthrough",
+                                "arn:aws:s3:::ci-boutique-ado-walkthrough/*"
+                            ]
+
+                * Click next:tags
+                * Click review policy
+                * Give it a name and description
+                * Click create policy
+                * You'll be brought back to the list of policies
+    * Add the policy to the group
+         * Go to user groups
+            * Select your recently made group
+                * Go to permissions
+                * Click add permissions button
+                * Select attach policy
+                * Find the one you just made
+                * Click add permissions at the bottom
+    * Create user to put into the group
+        * Go to users
+            * Click add user
+                * Name: boutique-ado-staticfiles-user
+                * access type: programmatic
+                * Select Next: permissions
+                    * Select the group we made
+                    * Click next: tags
+                    * Click next: Review
+                    * Click create user
+    * Download the csv file which contains secret keys  
+    **Note** You cannot access these again so MAKE SURE THIS FILE IS SAVED
+
+
 [Back to top](#walkthrough-steps)
 </details>
 
 <details>
 <summary>Connect django to s3</summary>
+
+[ci video](https://youtu.be/r-HJv_MyOqw)
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/2229819dd50d944117bfe9837c590d59d70bbc66)
+
+* Install boto3 and django-storages
+
+        pip3 install boto3
+        pip3 install django-storages
+        pip3 freeze > requirements.txt
+
+* Add storages to installed apps in settings.py
+
+        'storages',
+
+* To connect Django to s3 add settings in settings.py to tell it which bucket it should be communicating with
+
+        # CONNECTING DJANGO TO S3
+        # check for environment variable called use_aws
+        if 'USE_AWS' in os.environ:
+            # Bucket Config
+            AWS_STORAGE_BUCKET_NAME = 'ci-boutique-ado-walkthrough'
+            AWS_S3_REGION_NAME = 'EU (Ireland) eu-west-1'
+            AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+            AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+* GO to heroku and add AWS keys to config variables
+    * AWS_ACCESS_KEY_ID : copied from csv from earlier
+    * AWS_SECRET_ACCESS_KEY : copied from csv from earlier
+    * USE_AWS: True
+    * Remove disablestatic variable
+
+* In settings.py tell django where static files are coming from in production
+
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+* Create custom_storages.py at root
+
+        from django.conf import settings
+        from storages.backends.s3boto3 import S3Boto3Storage
+
+        class StaticStorage(S3Boto3Storage):
+            location = settings.STATICFILES_LOCATION
+
+        class MediaStorage(S3Boto3Storage):
+            location = settings.MEDIAFILES_LOCATION
+
+* Set the locations in settings.py
+
+        # Static and media files
+        STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+        STATICFILES_LOCATION = 'static'
+        DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+        MEDIAFILES_LOCATION = 'media'
+
+* Override static and media urls 
+
+        STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/'
+        MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/'
+
+
+
+
+
+
 
 [Back to top](#walkthrough-steps)
 </details>
