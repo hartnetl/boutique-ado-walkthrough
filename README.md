@@ -6491,6 +6491,191 @@ CSS ISSUES
 <details>
 <summary>Shopping bag</summary>
 
+[video](https://youtu.be/l-F1ICBhk-Q)  
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/250e2c2b8e43cccb56b4721cd8a8bd4de6686546)
+
+**IMPORTANT**  
+
+Code issue  
+After this video was made, we discovered an issue with a part of the code. The minus quantity button in the bag is meant to be disabled when the quantity hits 1. Which works on small screens after this refactor. However, this does not work on larger screens.
+
+The reason for this is because during this code refactoring, the instructor uses the quantity-form twice, and hides one or the other depending on the screen size. However, as the quantity-form uses an ID to identify itself, only the first element within the HTML with that ID is picked up by the corresponding code. Even though you can only see one form at a time in the browser, they both exist within the HTML.
+
+You don't need to fix this error while working on this walkthrough project. However please be aware of this if you want to include similar functionality in your own project.
+
+To fix this issue you would need to change the ID on the quantity-form to a class, and refactor the JavaScript to look for elements with the same class name and perform the appropriate actions.
+
+<hr>
+
+To make the bag better we're gonna change it to a grid instead of a table for mobiles only
+
+* Create individual files for each table section 
+
+    * bag-total.html
+    * checkout-buttons.html
+    * product-image.html
+    * product-info.html
+    * quantity-form.html
+
+* Copy each section from bag.html to the corresponding file
+* Change each block to an include statement
+
+<details>
+<summary>Reveal new bag.html</summary>
+
+        {% extends "base.html" %}
+        {% load static %}
+        {% load bag_tools %}
+
+        {% block page_header %}
+            <div class="container header-container">
+                <div class="row">
+                    <div class="col"></div>
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block content %}
+            <div class="overlay"></div>
+            <div class="container mb-2">
+                <div class="row">
+                    <div class="col">
+                        <hr>
+                        <h2 class="logo-font mb-4">Shopping Bag</h2>
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        {% if bag_items %}
+                            <div class="d-block d-md-none">
+                                <div class="row">
+                                    <div class="col">
+                                        {% include "bag/bag-total.html" %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        {% include "bag/checkout-buttons.html" %}
+                                        <p class="text-muted mb-5">A summary of your bag contents is below</p>
+                                    </div>
+                                </div>
+                                {% for item in bag_items %}
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 mb-2">
+                                            {% include "bag/product-image.html" %}
+                                        </div>
+                                        <div class="col-12 col-sm-6 mb-2">
+                                            {% include "bag/product-info.html" %}
+                                        </div>
+                                        <div class="col-12 col-sm-6 order-sm-last">
+                                            <p class="my-0">Price Each: ${{ item.product.price }}</p>
+                                            <p><strong>Subtotal: </strong>${{ item.product.price | calc_subtotal:item.quantity }}</p>
+                                        </div>
+                                        <div class="col-12 col-sm-6">
+                                            {% include "bag/quantity-form.html" %}
+                                        </div>
+                                    </div>
+                                    <div class="row"><div class="col"><hr></div></div>
+                                {% endfor %}
+                                <div class="btt-button shadow-sm rounded-0 border border-black">
+                                    <a class="btt-link d-flex h-100">
+                                        <i class="fas fa-arrow-up text-black mx-auto my-auto"></i>
+                                    </a>	
+                                </div>
+                            </div>
+                            <div class="table-responsive rounded d-none d-md-block">
+                                <table class="table table-sm table-borderless">
+                                    <thead class="text-black">
+                                        <tr>
+                                            <th scope="col">Product Info</th>
+                                            <th scope="col"></th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Qty</th>
+                                            <th scope="col">Subtotal</th>
+                                        </tr>
+                                    </thead>
+
+                                    {% for item in bag_items %}
+                                        <tr>
+                                            <td class="p-3 w-25">
+                                                {% include "bag/product-image.html" %}
+                                            </td>
+                                            <td class="py-3">
+                                                {% include "bag/product-info.html" %}
+                                            </td>
+                                            <td class="py-3">
+                                                <p class="my-0">${{ item.product.price }}</p>
+                                            </td>
+                                            <td class="py-3 w-25">
+                                                {% include "bag/quantity-form.html" %}
+                                            </td>
+                                            <td class="py-3">
+                                                <p class="my-0">${{ item.product.price | calc_subtotal:item.quantity }}</p>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan="5" class="pt-5 text-right">
+                                            {% include "bag/bag-total.html" %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5" class="text-right">
+                                            {% include "bag/checkout-buttons.html" %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="lead mb-5">Your bag is empty.</p>
+                            <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 btn-lg">
+                                <span class="icon">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                                <span class="text-uppercase">Keep Shopping</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block postloadjs %}
+        {{ block.super }}
+        <script type="text/javascript">
+            $('.btt-link').click(function(e) {
+                window.scrollTo(0,0)
+            })
+        </script>
+        {% include 'products/includes/quantity_input_script.html' %}
+
+        <script type="text/javascript">
+            // Update quantity on click
+            $('.update-link').click(function(e) {
+                var form = $(this).prev('.update-form');
+                form.submit();
+            })
+
+            // Remove item and reload on click
+            $('.remove-item').click(function(e) {
+                var csrfToken = "{{ csrf_token }}";
+                var itemId = $(this).attr('id').split('remove_')[1];
+                var size = $(this).data('product_size');
+                var url = `/bag/remove/${itemId}/`;
+                var data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size};
+
+                $.post(url, data)
+                .done(function() {
+                    location.reload();
+                });
+            })
+        </script>
+        {% endblock %}
+
+</details>
+
 [Back to top](#walkthrough-steps)
 </details>
 
