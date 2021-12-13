@@ -18,6 +18,7 @@
 - [Profile app](#profile-app)
 - [Product Admin](#product-admin)
 - [Deploy to heroku](#deploy-to-heroku)
+- [Sending emails with Django](#sending-emails)
 
 ##
 
@@ -6334,11 +6335,81 @@ We can do this through another service called Iam which stands for Identity and 
 
 * Confirm email address for superuser on postgres database
     * Login to admin from heroku app
-    
+    * Verify email address of user and add as primary
+
+* Add stripe keys to heroku config vars
+
+    * login to stripe
+    * Developers
+    * Api keys
+        * Copy publishable key
+            * Go to heroku app - settings
+            * Config vars
+            * STRIPE_PUBLIC_KEY: paste
+        * Copy secret key
+            * heroku config vars
+            * STRIPE_SECRET_KEY: paste
+
+    * Create new webhook endpoint
+        * Developers -> Webhooks
+        * Add endpoint
+        * Insert url for heroku app followed by /checkout/wh/
+        * Listen to all events
+        * Add endpoint
+        * Reveal signing secret
+        * Add to heroku config vars under STRIPE_WH_SECRET
+
+**Remember** These variables need to match what's in settings.py
+
+* Send test webhook from stripe - should be successful
+
+**Notes**
+If we wanted to turn this into a real store at this point it would involve some additional testing on stripe, setting up real confirmation emails and switching our stripe settings to use the live keys rather than the test ones we're using now.  
+We would also likely want to write a plethora of tests for our application, in particular in the checkout and shopping bag app, and make some security adjustments as well as some minor changes to make it easier to work between our development and production environments seamlessly.
 
 </details>
 
 [Back to top](#walkthrough-steps)
 
+
+<hr>
+
+## Sending emails
+
+<details>
+<summary>with django</summary>
+
+[source code](https://github.com/Code-Institute-Solutions/boutique_ado_v1/tree/a07c1ca5a3b973eb47e5c944829cea06ead3936d)  
+[ci video](https://youtu.be/uCtLfAd6w-c)  
+
+* Create 2 step verification for your email address
+* Get a password for your django app
+* Go to heroku app config vars
+    * EMAIL_HOST_PASS : paste in password
+    * EMAIL_HOST_USER : the email used above
+
+* settings.py
+    * Remove the backend email
+
+            EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    * Add custom settings
+
+            if 'DEVELOPMENT' in os.environ:
+                EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+                DEFAULT_FROM_EMAIL = 'boutiqueado@example.com'
+            else:
+                EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+                EMAIL_USE_TLS = True
+                EMAIL_PORT = 587
+                EMAIL_HOST = 'smtp.gmail.com'
+                EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+                EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASS')
+                DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
+
+
+</details>
+
+[Back to top](#walkthrough-steps)
 
 <hr>
