@@ -29,7 +29,6 @@ DEBUG = 'DEVELOPMENT' in os.environ
 
 ALLOWED_HOSTS = ['ci-boutique-ado-walkthrough.herokuapp.com', 'localhost']
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -41,7 +40,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-             'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         },
     },
 }
