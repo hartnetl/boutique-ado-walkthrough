@@ -6682,6 +6682,14 @@ To make the bag better we're gonna change it to a grid instead of a table for mo
 <details>
 <summary>Flake8 and python</summary>
 
+[ci video](https://youtu.be/pty5AlktsZo)  
+
+View all problems in code instead of viewing all files
+
+        python3 -m flake8
+
+ctrl + click on the error to go to it
+
 </details>
 
 [Back to top](#walkthrough-steps)

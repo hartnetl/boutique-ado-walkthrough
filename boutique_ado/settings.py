@@ -98,7 +98,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 # This request allows us to do request.user etc
                 # It's required by allauth
-                'django.template.context_processors.request', 
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
@@ -126,7 +126,7 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-# allauth is going to send confirmation emails when an account is created, so 
+# allauth is going to send confirmation emails when an account is created, so
 # we're going to temporarily log them to the console
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -166,7 +166,7 @@ else:
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
-    
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -230,7 +230,6 @@ if 'USE_AWS' in os.environ:
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     AWS_DEFAULT_ACL = None
-
 
     # Static and media files
     STATICFILES_STORAGE = 'custom_storages.StaticStorage'
