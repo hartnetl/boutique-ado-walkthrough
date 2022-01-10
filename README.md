@@ -41,7 +41,7 @@
 
     Create the project 
 
-        django.admin startproject boutique_ado .
+        django-admin startproject boutique_ado .
     
     Add necessary files to gitignore 
     Test it works
